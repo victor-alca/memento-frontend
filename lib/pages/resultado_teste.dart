@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ResultadoTestePage extends StatelessWidget {
-  const ResultadoTestePage({super.key});
+
+  final int pontuacao;
+
+  const ResultadoTestePage({super.key, required this.pontuacao});
 
   @override
   Widget build(BuildContext context) {
