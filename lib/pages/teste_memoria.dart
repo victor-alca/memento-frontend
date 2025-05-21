@@ -11,10 +11,27 @@ class TesteMemoriaPage extends StatefulWidget {
 
 class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
   final List<String> palavrasBase = [
-    'Casa', 'Carro', 'Mesa', 'Livro', 'Sol',
-    'Chave', 'Gato', 'Copo', 'Porta', 'Janela',
-    'Fogo', 'Água', 'Relógio', 'Bolsa', 'Cadeira',
-    'Céu', 'Flor', 'Papel', 'Luz', 'Telefone', 'Celular'
+    'Casa',
+    'Carro',
+    'Mesa',
+    'Livro',
+    'Sol',
+    'Chave',
+    'Gato',
+    'Copo',
+    'Porta',
+    'Janela',
+    'Fogo',
+    'Água',
+    'Relógio',
+    'Bolsa',
+    'Cadeira',
+    'Céu',
+    'Flor',
+    'Papel',
+    'Luz',
+    'Telefone',
+    'Celular',
   ];
 
   late List<String> sequenciaPalavras;
@@ -22,11 +39,14 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
   int indiceAtual = 0;
   int pontuacao = 0;
   int erros = 0;
+  List<Duration> temposDeResposta = [];
+  late DateTime tempoInicio;
 
   @override
   void initState() {
     super.initState();
     sequenciaPalavras = _gerarSequenciaAleatoria();
+    tempoInicio = DateTime.now();
   }
 
   List<String> _gerarSequenciaAleatoria() {
@@ -40,6 +60,9 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
   }
 
   void responder(bool visto) {
+    final tempoResposta = DateTime.now().difference(tempoInicio);
+    temposDeResposta.add(tempoResposta);
+
     String palavraAtual = sequenciaPalavras[indiceAtual];
     bool jaViu = palavrasVistas.contains(palavraAtual);
 
@@ -56,22 +79,35 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
     });
 
     if (indiceAtual >= sequenciaPalavras.length) {
+      Duration somaTempos = temposDeResposta.fold(
+        Duration.zero,
+        (a, b) => a + b,
+      );
+      double tempoMedio = somaTempos.inMilliseconds / temposDeResposta.length;
+
       Future.delayed(Duration.zero, () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ResultadoTestePage(pontuacao: pontuacao),
+            builder:
+                (_) => ResultadoTestePage(
+                  pontuacao: pontuacao,
+                  tempoMedioMs: tempoMedio,
+                ),
           ),
         );
       });
+    } else {
+      tempoInicio = DateTime.now(); // iniciar tempo para próxima palavra
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String palavraAtual = indiceAtual < sequenciaPalavras.length
-        ? sequenciaPalavras[indiceAtual]
-        : '';
+    String palavraAtual =
+        indiceAtual < sequenciaPalavras.length
+            ? sequenciaPalavras[indiceAtual]
+            : '';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -102,12 +138,20 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text('Erros | $erros',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w500)),
-                Text('Pontos | $pontuacao',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w500)),
+                Text(
+                  'Erros | $erros',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  'Pontos | $pontuacao',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 50),
@@ -141,9 +185,7 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Text(
         texto,
