@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'resultado_teste.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TesteMemoriaPage extends StatefulWidget {
   const TesteMemoriaPage({super.key});
@@ -59,7 +60,7 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
     return sequencia;
   }
 
-  void responder(bool visto) {
+  void responder(bool visto) async {
     final tempoResposta = DateTime.now().difference(tempoInicio);
     temposDeResposta.add(tempoResposta);
 
@@ -84,6 +85,14 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
         (a, b) => a + b,
       );
       double tempoMedio = somaTempos.inMilliseconds / temposDeResposta.length;
+
+      // Salva o resultado no Supabase
+      final supabase = Supabase.instance.client;
+      await supabase.from('resultados_memoria').insert({
+        'pontuacao': pontuacao,
+        'tempo_medio_ms': tempoMedio,
+        'data': DateTime.now().toIso8601String(),
+      });
 
       Future.delayed(Duration.zero, () {
         Navigator.pushReplacement(
@@ -168,7 +177,7 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildBotao('VISTO', true),
+                _buildBotao('REPETIDO', true),
                 _buildBotao('NOVO', false),
               ],
             ),
