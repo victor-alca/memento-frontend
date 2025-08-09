@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Meu App de Testes',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.teal),
-      home: TesteMemoriaPage(),
+      home: TmtA(),
     );
   }
 }
