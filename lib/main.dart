@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/resultado_teste.dart';
 import 'pages/teste_memoria.dart';
+import 'pages/login_page.dart';
 
 
 Future<void> main() async {
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Meu App de Testes',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.teal),
-      home: const TesteMemoriaPage(),
+      home: const LoginPage(),
     );
   }
 }
