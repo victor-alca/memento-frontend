@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:test_app/app/router/app_routes.dart';
 
 class SignPage extends StatefulWidget {
   const SignPage({super.key});
@@ -13,9 +14,11 @@ class _SignPageState extends State<SignPage> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController crmController = TextEditingController();
-  final TextEditingController dataNascimentoController = TextEditingController();
+  final TextEditingController dataNascimentoController =
+      TextEditingController();
   final TextEditingController senhaController = TextEditingController();
-  final TextEditingController confirmarSenhaController = TextEditingController();
+  final TextEditingController confirmarSenhaController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +41,7 @@ class _SignPageState extends State<SignPage> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Dropdown Tipo
                 const Align(
                   alignment: Alignment.centerLeft,
@@ -51,10 +54,16 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'Paciente', child: Text('Paciente')),
+                    DropdownMenuItem(
+                      value: 'Paciente',
+                      child: Text('Paciente'),
+                    ),
                     DropdownMenuItem(value: 'Médico', child: Text('Médico')),
                   ],
                   onChanged: (value) {
@@ -78,7 +87,10 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -96,7 +108,10 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -115,7 +130,10 @@ class _SignPageState extends State<SignPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -124,7 +142,10 @@ class _SignPageState extends State<SignPage> {
                 // Data de Nascimento
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Data de Nascimento', style: TextStyle(fontSize: 16)),
+                  child: Text(
+                    'Data de Nascimento',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 TextField(
@@ -134,7 +155,10 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                   onTap: () async {
                     DateTime? pickedDate = await showDatePicker(
@@ -144,7 +168,7 @@ class _SignPageState extends State<SignPage> {
                       lastDate: DateTime.now(),
                     );
                     if (pickedDate != null) {
-                      dataNascimentoController.text = 
+                      dataNascimentoController.text =
                           '${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}';
                     }
                   },
@@ -166,7 +190,10 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -174,7 +201,10 @@ class _SignPageState extends State<SignPage> {
                 // Confirmar Senha
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Confirmar Senha', style: TextStyle(fontSize: 16)),
+                  child: Text(
+                    'Confirmar Senha',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 TextField(
@@ -185,7 +215,10 @@ class _SignPageState extends State<SignPage> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -201,10 +234,15 @@ class _SignPageState extends State<SignPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Registrar-se', style: TextStyle(fontSize: 18)),
+                    child: const Text(
+                      'Registrar-se',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -212,14 +250,14 @@ class _SignPageState extends State<SignPage> {
                 // Já tem uma conta?
                 TextButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    );
+                    context.go(AppRoutes.login);
                   },
                   child: const Text(
                     'Já tem uma conta?',
-                    style: TextStyle(color: Colors.black, decoration: TextDecoration.underline),
+                    style: TextStyle(
+                      color: Colors.black,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
