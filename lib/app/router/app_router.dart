@@ -29,8 +29,12 @@ final appRouter = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final loggingIn = state.matchedLocation == AppRoutes.login;
-    if (session == null && !loggingIn) return AppRoutes.login;
+    final signingUp = state.matchedLocation == AppRoutes.signUp;
+    
+    if (session == null && !loggingIn && !signingUp) return AppRoutes.login;
+    
     if (session != null && loggingIn) return AppRoutes.testeMemoria;
+    
     return null;
   },
   routes: [

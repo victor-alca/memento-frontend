@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
@@ -19,16 +20,19 @@ class AuthService {
       return true;
     } on AuthException catch (e) {
       throw Exception('Erro de autenticação: ${e.message}');
+    } on SocketException catch (e) {
+      throw Exception('Erro de conexão. Verifique sua internet.');
     } catch (e) {
       throw Exception('Erro inesperado: $e');
     }
   }
 
-  Future<bool> signUp(String email, String password) async {
+  Future<bool> signUp(String email, String password, {Map<String, dynamic>? metadata}) async {
     try {
       final response = await _client.auth.signUp(
         email: email,
         password: password,
+        data: metadata,
       );
 
       if (response.user == null) {
@@ -37,13 +41,23 @@ class AuthService {
 
       return true;
     } on AuthException catch (e) {
+      if (e.statusCode == '500') {
+        throw Exception('Erro interno do servidor. Tente novamente em alguns minutos.');
+      }
       throw Exception('Erro de autenticação: ${e.message}');
+    } on SocketException catch (e) {
+      throw Exception('Erro de conexão. Verifique sua internet.');
     } catch (e) {
       throw Exception('Erro inesperado: $e');
     }
   }
 
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    try {
+      await _client.auth.signOut();
+    } catch (e) {
+      rethrow;
+    }
   }
+
 }

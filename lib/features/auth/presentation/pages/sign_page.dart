@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/app/provider/supabase_provider.dart';
+import 'package:test_app/features/auth/service/auth_service.dart';
+import 'package:test_app/core/utils/validators.dart';
+import 'package:test_app/core/utils/format_utils.dart';
 
 class SignPage extends StatefulWidget {
   const SignPage({super.key});
@@ -20,6 +24,67 @@ class _SignPageState extends State<SignPage> {
   final TextEditingController confirmarSenhaController =
       TextEditingController();
 
+  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  late final AuthService _authService;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService(supabase.client);
+  }
+
+  Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (senhaController.text != confirmarSenhaController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('As senhas não coincidem')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final metadata = {
+        'name': nomeController.text,
+        'birth_date': FormatUtils.formatDateForDatabase(dataNascimentoController.text),
+      };
+
+      if (tipoSelecionado == 'Médico' && crmController.text.isNotEmpty) {
+        metadata['crm'] = crmController.text;
+      }
+
+      // Criar usuário
+      await _authService.signUp(
+        emailController.text.trim(),
+        senhaController.text,
+        metadata: metadata,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cadastro realizado com sucesso! Verifique seu email.'),
+        ),
+      );
+      
+      context.go(AppRoutes.login);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,105 +93,65 @@ class _SignPageState extends State<SignPage> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: Image.asset(
-                    'assets/logo-with-name.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Dropdown Tipo
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Tipo', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 4),
-                DropdownButtonFormField<String>(
-                  value: tipoSelecionado,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: Image.asset(
+                      'assets/logo-with-name.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'Paciente',
-                      child: Text('Paciente'),
-                    ),
-                    DropdownMenuItem(value: 'Médico', child: Text('Médico')),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      tipoSelecionado = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 32),
 
-                // Nome
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Nome', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: nomeController,
-                  decoration: InputDecoration(
-                    hintText: 'Nome',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Email
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Email', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // CRM (só aparece se for médico)
-                if (tipoSelecionado == 'Médico') ...[
+                  // Dropdown Tipo
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('CRM', style: TextStyle(fontSize: 16)),
+                    child: Text('Tipo', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 4),
-                  TextField(
-                    controller: crmController,
+                  DropdownButtonFormField<String>(
+                    value: tipoSelecionado,
                     decoration: InputDecoration(
-                      hintText: 'CRM',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Paciente',
+                        child: Text('Paciente'),
+                      ),
+                      DropdownMenuItem(value: 'Médico', child: Text('Médico')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        tipoSelecionado = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Nome
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Nome', style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: nomeController,
+                    validator: Validators.validateName,
+                    decoration: InputDecoration(
+                      hintText: 'Nome',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -137,66 +162,113 @@ class _SignPageState extends State<SignPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                ],
 
-                // Data de Nascimento
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Data de Nascimento',
-                    style: TextStyle(fontSize: 16),
+                  // Email
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Email', style: TextStyle(fontSize: 16)),
                   ),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: dataNascimentoController,
-                  decoration: InputDecoration(
-                    hintText: 'dd/mm/aaaa',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: emailController,
+                    validator: Validators.validateEmail,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                   ),
-                  onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (pickedDate != null) {
-                      dataNascimentoController.text =
-                          '${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}';
-                    }
-                  },
-                  readOnly: true,
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // Senha
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Senha', style: TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: senhaController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Senha',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  // CRM apenas para médicos
+                  if (tipoSelecionado == 'Médico') ...[
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('CRM', style: TextStyle(fontSize: 16)),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                    const SizedBox(height: 4),
+                    TextFormField(
+                      controller: crmController,
+                      validator: (value) => Validators.validateCRM(value, isRequired: tipoSelecionado == 'Médico'),
+                      decoration: InputDecoration(
+                        hintText: 'CRM',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Data de Nascimento
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Data de Nascimento',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: dataNascimentoController,
+                    validator: Validators.validateBirthDate,
+                    decoration: InputDecoration(
+                      hintText: 'dd/mm/aaaa',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (pickedDate != null) {
+                        dataNascimentoController.text = FormatUtils.formatPickedDate(pickedDate);
+                      }
+                    },
+                    readOnly: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Senha
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Senha', style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: senhaController,
+                    validator: Validators.validatePassword,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'Senha',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                 // Confirmar Senha
                 const Align(
@@ -207,8 +279,9 @@ class _SignPageState extends State<SignPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                TextField(
+                TextFormField(
                   controller: confirmarSenhaController,
+                  validator: (value) => Validators.validatePasswordConfirmation(value, senhaController.text),
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Confirmar Senha',
@@ -227,10 +300,7 @@ class _SignPageState extends State<SignPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Aqui você pode adicionar a lógica de cadastro
-                      print('Cadastro realizado!');
-                    },
+                    onPressed: _isLoading ? null : _signUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
@@ -239,10 +309,19 @@ class _SignPageState extends State<SignPage> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text(
-                      'Registrar-se',
-                      style: TextStyle(fontSize: 18),
-                    ),
+                    child: _isLoading 
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Registrar-se',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -261,7 +340,8 @@ class _SignPageState extends State<SignPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-              ],
+                ],
+              ),
             ),
           ),
         ),
