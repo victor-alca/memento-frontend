@@ -51,8 +51,9 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
           children: [
             Text('Dr. ${widget.user.name}'),
             if (widget.user.crm != null)
+              // CRM  
               Text(
-                'CRM: ${widget.user.crm}',
+                '${widget.user.crm}',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.normal,

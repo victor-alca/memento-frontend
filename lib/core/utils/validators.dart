@@ -35,6 +35,12 @@ class Validators {
       if (value == null || value.isEmpty) {
         return 'CRM é obrigatório para médicos';
       }
+      
+      // Validar formato: CRM/XX 123456
+      final crmRegex = RegExp(r'^CRM\/[A-Z]{2} \d{6}$');
+      if (!crmRegex.hasMatch(value)) {
+        return 'CRM deve ter o formato: CRM/SP 123456';
+      }
     }
     return null;
   }

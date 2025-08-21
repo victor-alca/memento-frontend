@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
@@ -195,9 +196,10 @@ class _SignPageState extends State<SignPage> {
                     const SizedBox(height: 4),
                     TextFormField(
                       controller: crmController,
+                      inputFormatters: [CrmFormatter()],
                       validator: (value) => Validators.validateCRM(value, isRequired: tipoSelecionado == 'Médico'),
                       decoration: InputDecoration(
-                        hintText: 'CRM',
+                        hintText: 'CRM/SP 123456',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
