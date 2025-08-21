@@ -77,7 +77,6 @@ class AuthService {
       String? crm;
       String? userName;
       DateTime? birthDate;
-      DateTime? createdAt;
 
       try {
         // Verificar se é médico
