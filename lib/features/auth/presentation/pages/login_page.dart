@@ -45,10 +45,14 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => isLoading = true);
     try {
-      final ok = await _authService.signIn(email, password);
+      final user = await _authService.signIn(email, password);
       if (!mounted) return;
-      if (ok) {
-        context.go(AppRoutes.testeMemoria); // success
+      
+      // Redireciona baseado no tipo de usuário
+      if (user.isDoctor) {
+        context.go(AppRoutes.doctorHome, extra: user);
+      } else {
+        context.go(AppRoutes.patientHome, extra: user);
       }
     } catch (e) {
       if (!mounted) return;
