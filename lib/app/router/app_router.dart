@@ -70,6 +70,10 @@ final appRouter = GoRouter(
       builder: (context, state) => const TesteMemoriaPage(),
     ),
     GoRoute(
+      path: AppRoutes.tmtA,
+      builder: (context, state) => TmtA(),
+    ),
+    GoRoute(
       path: AppRoutes.resultadoTeste,
       builder: (context, state) {
         final args = state.extra as ResultadoTesteArgs;
