@@ -4,5 +4,6 @@ class AppRoutes {
   static const patientHome = '/patient-home';
   static const doctorHome = '/doctor-home';
   static const testeMemoria = '/teste-memoria';
+  static const tmtA = '/teste-tmt-a';
   static const resultadoTeste = '/resultado-teste';
 }
