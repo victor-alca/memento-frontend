@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'resultado_teste.dart';
+import 'package:go_router/go_router.dart';
+import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TesteMemoriaPage extends StatefulWidget {
@@ -86,7 +88,6 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       );
       double tempoMedio = somaTempos.inMilliseconds / temposDeResposta.length;
 
-      // Salva o resultado no Supabase
       final supabase = Supabase.instance.client;
       await supabase.from('resultados_memoria').insert({
         'pontuacao': pontuacao,
@@ -95,19 +96,16 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       });
 
       Future.delayed(Duration.zero, () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (_) => ResultadoTestePage(
-                  pontuacao: pontuacao,
-                  tempoMedioMs: tempoMedio,
-                ),
+        context.go(
+          AppRoutes.resultadoTeste,
+          extra: ResultadoTesteArgs(
+            pontuacao: pontuacao,
+            tempoMedioMs: tempoMedio,
           ),
         );
       });
     } else {
-      tempoInicio = DateTime.now(); // iniciar tempo para próxima palavra
+      tempoInicio = DateTime.now();
     }
   }
 
