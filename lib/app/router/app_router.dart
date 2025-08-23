@@ -10,6 +10,7 @@ import '../../features/auth/presentation/pages/index.dart';
 import '../../features/auth/presentation/pages/patient_home_page.dart';
 import '../../features/auth/presentation/pages/doctor_home_page.dart';
 import '../../features/tests/presentation/pages/index.dart';
+import 'package:test_app/features/tests/presentation/pages/teste_tmt_a.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
