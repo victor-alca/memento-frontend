@@ -92,7 +92,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.orange.shade200,
                       iconColor: Colors.brown,
                       onTap: () {
-                        // TODO: Navegar para Trail Making Test
+                        context.go(AppRoutes.tmtA);
                       },
                     ),
                     _buildTestCard(

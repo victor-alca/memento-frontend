@@ -35,6 +35,7 @@ class _TmtAState extends State<TmtA> {
   int erros = 0;
 
   List<ButtonInfo> _buttonInfos = [];
+  DateTime? _startTime;
 
   @override
   void initState() {
@@ -98,9 +99,14 @@ class _TmtAState extends State<TmtA> {
   void _disableButton(int number) {
     setState(() {
       final btn = _buttonInfos.firstWhere((b) => b.number == number);
+
       if (btn.number == lastNumber + 1) {
         btn.disabled = true;
         lastNumber = btn.number;
+
+        if (btn.number == 1) {
+          _startTime = DateTime.now();
+        }
 
         if (btn.number == 20) {
           _salvarResultado();
@@ -112,22 +118,29 @@ class _TmtAState extends State<TmtA> {
   }
 
   Future<void> _salvarResultado() async {
-  try {
-    final supabase = Supabase.instance.client;
-    int pontuacao = 20 - erros;
-    double tempoTotal = 0.0; 
+    try {
+      final supabase = Supabase.instance.client;
+      int pontuacao = 20 - erros;
 
-    await supabase.from('resultados_tmt').insert({
-      'pontuacao': pontuacao,
-      'tempo_total': tempoTotal,
-      'data': DateTime.now().toIso8601String(),
-    });
+      double tempoTotal = 0.0;
+      if (_startTime != null) {
+        tempoTotal = DateTime.now()
+            .difference(_startTime!)
+            .inMilliseconds / 1000.0;
+      }
 
-    debugPrint("Resultado salvo com sucesso!");
-  } catch (e) {
-    debugPrint("Erro ao salvar resultado: $e");
+      await supabase.from('resultados_tmt').insert({
+        'pontuacao': pontuacao,
+        'tempo_total': tempoTotal,
+        'data': DateTime.now().toIso8601String(),
+      });
+
+      debugPrint("salvo com sucesso!");
+    } catch (e) {
+      debugPrint("Erro ao salvar resultado: $e");
+    }
   }
-}
+
 
   @override
   Widget build(BuildContext context) {
