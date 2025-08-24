@@ -41,7 +41,7 @@ class _TmtAState extends State<TmtA> {
     final double buttonSize = 40;
     final double safeTop = kToolbarHeight + 20; // evita appbar e contador
     final double padding = 5; // margem entre botões
-    final double restartBtnWidth = 56; 
+    final double restartBtnWidth = 56;
     final double restartBtnHeight = 56;
 
     lastNumber = 0;
@@ -57,8 +57,10 @@ class _TmtAState extends State<TmtA> {
         overlap = false;
 
         left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top = safeTop +
-            _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
+        top =
+            safeTop +
+            _random.nextDouble() *
+                (screenSize.height - safeTop - buttonSize - padding);
 
         // verifica colisão com outros botões
         for (var other in _buttonInfos) {
@@ -74,14 +76,9 @@ class _TmtAState extends State<TmtA> {
             top < safeTop + restartBtnHeight + 10) {
           overlap = true;
         }
-
       } while (overlap);
 
-      _buttonInfos.add(ButtonInfo(
-        number: number,
-        left: left,
-        top: top,
-      ));
+      _buttonInfos.add(ButtonInfo(number: number, left: left, top: top));
     }
 
     setState(() {});
@@ -124,7 +121,7 @@ class _TmtAState extends State<TmtA> {
             ),
           ),
 
-          // botão de reiniciar 
+          // botão de reiniciar
           Positioned(
             top: 10,
             right: 10,
@@ -151,11 +148,12 @@ class _TmtAState extends State<TmtA> {
                       shape: CircleBorder(),
                       backgroundColor: btn.disabled ? Colors.grey : null,
                     ),
-                    onPressed: btn.disabled
-                        ? null
-                        : () {
-                            _disableButton(btn.number);
-                          },
+                    onPressed:
+                        btn.disabled
+                            ? null
+                            : () {
+                              _disableButton(btn.number);
+                            },
                     child: Text('${btn.number}'),
                   ),
                 ),
