@@ -19,7 +19,7 @@ class AuthService {
       }
 
       // Buscar dados completos do usuário
-      final userData = await _getUserData(response.user!.id);
+      final userData = await getUserData(response.user!.id);
 
       return userData;
     } on AuthException catch (e) {
@@ -71,7 +71,7 @@ class AuthService {
   }
 
   /// Busca dados completos do usuário após login
-  Future<UserModel> _getUserData(String userId) async {
+  Future<UserModel> getUserData(String userId) async {
     try {
       UserRole userRole = UserRole.patient;
       String? crm;
@@ -80,11 +80,12 @@ class AuthService {
 
       try {
         // Verificar se é médico
-        final doctorResponse = await _client
-            .from('doctors')
-            .select('crm')
-            .eq('user_id', userId)
-            .maybeSingle();
+        final doctorResponse =
+            await _client
+                .from('doctors')
+                .select('crm')
+                .eq('user_id', userId)
+                .maybeSingle();
 
         if (doctorResponse != null) {
           userRole = UserRole.doctor;
@@ -95,11 +96,14 @@ class AuthService {
       }
 
       // Usar dados do auth.user
-      userName = _client.auth.currentUser?.userMetadata?['name'] as String? ?? 'Usuário';
+      userName =
+          _client.auth.currentUser?.userMetadata?['name'] as String? ??
+          'Usuário';
       final email = _client.auth.currentUser?.email ?? '';
 
       // Obter birth_date do metadata
-      final birthDateStr = _client.auth.currentUser?.userMetadata?['birth_date'] as String?;
+      final birthDateStr =
+          _client.auth.currentUser?.userMetadata?['birth_date'] as String?;
       if (birthDateStr != null) {
         try {
           birthDate = DateTime.parse(birthDateStr);
@@ -120,7 +124,9 @@ class AuthService {
       // Fallback: usuário básico
       return UserModel(
         id: userId,
-        name: _client.auth.currentUser?.userMetadata?['name'] as String? ?? 'Usuário',
+        name:
+            _client.auth.currentUser?.userMetadata?['name'] as String? ??
+            'Usuário',
         email: _client.auth.currentUser?.email ?? '',
         birthDate: null,
         role: UserRole.patient,

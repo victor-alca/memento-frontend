@@ -6,4 +6,7 @@ class AppRoutes {
   static const testeMemoria = '/teste-memoria';
   static const tmtA = '/teste-tmt-a';
   static const resultadoTeste = '/resultado-teste';
+  static const accountSettings = '/account';
+  static const editAccount = '/account/edit';
+  static const changePassword = '/account/password';
 }

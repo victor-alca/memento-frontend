@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
@@ -41,9 +40,9 @@ class _SignPageState extends State<SignPage> {
     }
 
     if (senhaController.text != confirmarSenhaController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As senhas não coincidem')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('As senhas não coincidem')));
       return;
     }
 
@@ -54,7 +53,9 @@ class _SignPageState extends State<SignPage> {
     try {
       final metadata = {
         'name': nomeController.text,
-        'birth_date': FormatUtils.formatDateForDatabase(dataNascimentoController.text),
+        'birth_date': FormatUtils.formatDateForDatabase(
+          dataNascimentoController.text,
+        ),
       };
 
       if (tipoSelecionado == 'Médico' && crmController.text.isNotEmpty) {
@@ -73,12 +74,12 @@ class _SignPageState extends State<SignPage> {
           content: Text('Cadastro realizado com sucesso! Verifique seu email.'),
         ),
       );
-      
+
       context.go(AppRoutes.login);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     } finally {
       setState(() {
         _isLoading = false;
@@ -197,7 +198,11 @@ class _SignPageState extends State<SignPage> {
                     TextFormField(
                       controller: crmController,
                       inputFormatters: [CrmFormatter()],
-                      validator: (value) => Validators.validateCRM(value, isRequired: tipoSelecionado == 'Médico'),
+                      validator:
+                          (value) => Validators.validateCRM(
+                            value,
+                            isRequired: tipoSelecionado == 'Médico',
+                          ),
                       decoration: InputDecoration(
                         hintText: 'CRM/SP 123456',
                         border: OutlineInputBorder(
@@ -242,7 +247,8 @@ class _SignPageState extends State<SignPage> {
                         lastDate: DateTime.now(),
                       );
                       if (pickedDate != null) {
-                        dataNascimentoController.text = FormatUtils.formatPickedDate(pickedDate);
+                        dataNascimentoController
+                            .text = FormatUtils.formatPickedDate(pickedDate);
                       }
                     },
                     readOnly: true,
@@ -272,76 +278,81 @@ class _SignPageState extends State<SignPage> {
                   ),
                   const SizedBox(height: 16),
 
-                // Confirmar Senha
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Confirmar Senha',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: confirmarSenhaController,
-                  validator: (value) => Validators.validatePasswordConfirmation(value, senhaController.text),
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Confirmar Senha',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                  // Confirmar Senha
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Confirmar Senha',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // Registrar-se
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _signUp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: confirmarSenhaController,
+                    validator:
+                        (value) => Validators.validatePasswordConfirmation(
+                          value,
+                          senhaController.text,
+                        ),
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'Confirmar Senha',
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
-                    child: _isLoading 
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Registrar-se',
-                            style: TextStyle(fontSize: 18),
-                          ),
                   ),
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 24),
 
-                // Já tem uma conta?
-                TextButton(
-                  onPressed: () {
-                    context.go(AppRoutes.login);
-                  },
-                  child: const Text(
-                    'Já tem uma conta?',
-                    style: TextStyle(
-                      color: Colors.black,
-                      decoration: TextDecoration.underline,
+                  // Registrar-se
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text(
+                                'Registrar-se',
+                                style: TextStyle(fontSize: 18),
+                              ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+
+                  // Já tem uma conta?
+                  TextButton(
+                    onPressed: () {
+                      context.go(AppRoutes.login);
+                    },
+                    child: const Text(
+                      'Já tem uma conta?',
+                      style: TextStyle(
+                        color: Colors.black,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
