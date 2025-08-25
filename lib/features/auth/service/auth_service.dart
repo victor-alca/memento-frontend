@@ -62,11 +62,12 @@ class AuthService {
     }
   }
 
-  Future<void> signOut() async {
+  Future<bool> signOut() async {
     try {
       await _client.auth.signOut();
+      return true;
     } catch (e) {
-      rethrow;
+      return false;
     }
   }
 
