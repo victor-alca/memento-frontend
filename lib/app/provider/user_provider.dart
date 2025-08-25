@@ -19,8 +19,15 @@ class UserProvider with ChangeNotifier {
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
-  bool get isDoctor => _user?.role == UserRole.doctor;
-  bool get isPatient => _user?.role == UserRole.patient;
+  bool get isDoctor {
+    if (_user == null) return false;
+    return _user!.role == UserRole.doctor;
+  }
+
+  bool get isPatient {
+    if (_user == null) return false;
+    return _user!.role == UserRole.patient;
+  }
 
   Future<void> _initializeUser() async {
     _setLoading(true);

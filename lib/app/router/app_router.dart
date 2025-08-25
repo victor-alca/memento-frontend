@@ -56,8 +56,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.patientHome,
       builder: (context, state) {
-        final user = state.extra as UserModel;
-        return PatientHomePage(user: user);
+        return PatientHomePage();
       },
     ),
     GoRoute(
@@ -85,7 +84,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.accountSettings,
       builder: (context, state) {
-        return const AuthWrapper(child: AccountSettingsPage());
+        return const AccountSettingsPage();
       },
     ),
 
