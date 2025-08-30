@@ -1,38 +1,42 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 // Classe para armazenar dados do botão
-class ButtonInfo {
-  final int number;
+class ButtonInfoB {
+  final String value;
   final double left;
   final double top;
   bool disabled;
 
-  ButtonInfo({
-    required this.number,
+  ButtonInfoB({
+    required this.value,
     required this.left,
     required this.top,
     this.disabled = false,
   });
 }
 
-class TmtA extends StatefulWidget {
-  const TmtA({super.key});
+class TmtB extends StatefulWidget {
+  const TmtB({super.key});
 
   @override
-  _TmtAState createState() => _TmtAState();
+  _TmtBState createState() => _TmtBState();
 }
 
-class _TmtAState extends State<TmtA> {
+class _TmtBState extends State<TmtB> {
   final Random _random = Random();
-  int lastNumber = 0;
+  int currentIndex = 0; 
   int erros = 0;
 
-  List<ButtonInfo> _buttonInfos = [];
+  List<ButtonInfoB> _buttonInfos = [];
   DateTime? _startTime;
+
+  // sequência fixa do TMT-B
+  final List<String> charList = [
+    '1', 'A', '2', 'B', '3', 'C', '4', 'D', '5', 'E',
+    '6', 'F', '7', 'G', '8', 'H', '9', 'I', '10', 'J'
+  ];
 
   @override
   void initState() {
@@ -44,29 +48,27 @@ class _TmtAState extends State<TmtA> {
 
   void _generateButtons(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final double buttonSize = 40;
-    final double safeTop = kToolbarHeight + 20; // evita appbar e contador
-    final double padding = 5; // margem entre botões
-    final double restartBtnWidth = 56; 
-    final double restartBtnHeight = 56;
+    const double buttonSize = 40;
+    final double safeTop = kToolbarHeight + 20;
+    const double padding = 5;
+    const double restartBtnWidth = 56;
+    const double restartBtnHeight = 56;
 
-    lastNumber = 0;
+    currentIndex = 0;
     erros = 0;
     _buttonInfos.clear();
 
-    for (int number = 1; number <= 20; number++) {
+    for (var char in charList) {
       double left, top;
       bool overlap;
 
       // tenta achar posição válida
       do {
         overlap = false;
-
         left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
         top = safeTop +
             _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
 
-        // verifica colisão com outros botões
         for (var other in _buttonInfos) {
           if ((left - other.left).abs() < buttonSize + padding &&
               (top - other.top).abs() < buttonSize + padding) {
@@ -75,16 +77,14 @@ class _TmtAState extends State<TmtA> {
           }
         }
 
-        // evita sobreposição com o botão de reiniciar
         if (left > screenSize.width - restartBtnWidth - 10 &&
             top < safeTop + restartBtnHeight + 10) {
           overlap = true;
         }
-
       } while (overlap);
 
-      _buttonInfos.add(ButtonInfo(
-        number: number,
+      _buttonInfos.add(ButtonInfoB(
+        value: char,
         left: left,
         top: top,
       ));
@@ -93,19 +93,20 @@ class _TmtAState extends State<TmtA> {
     setState(() {});
   }
 
-  void _disableButton(int number) {
+  void _disableButton(String value) {
     setState(() {
-      final btn = _buttonInfos.firstWhere((b) => b.number == number);
+      final btn = _buttonInfos.firstWhere((b) => b.value == value);
 
-      if (btn.number == lastNumber + 1) {
+      if (btn.value == charList[currentIndex]) {
         btn.disabled = true;
-        lastNumber = btn.number;
 
-        if (btn.number == 1) {
+        if (currentIndex == 0) {
           _startTime = DateTime.now();
         }
 
-        if (btn.number == 20) {
+        currentIndex++;
+
+        if (currentIndex == charList.length) {
           _salvarResultado();
         }
       } else {
@@ -121,9 +122,8 @@ class _TmtAState extends State<TmtA> {
 
       double tempoTotal = 0.0;
       if (_startTime != null) {
-        tempoTotal = DateTime.now()
-            .difference(_startTime!)
-            .inMilliseconds / 1000.0;
+        tempoTotal =
+            DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
       }
 
       await supabase.from('resultados_tmt').insert({
@@ -132,19 +132,18 @@ class _TmtAState extends State<TmtA> {
         'data': DateTime.now().toIso8601String(),
       });
 
-      debugPrint("salvo com sucesso!");
+      debugPrint("Resultado salvo com sucesso!");
     } catch (e) {
       debugPrint("Erro ao salvar resultado: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Teste TMT A',
+          'Teste TMT B',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
@@ -154,28 +153,23 @@ class _TmtAState extends State<TmtA> {
       ),
       body: Stack(
         children: [
-          // contador de erros
           Positioned(
             top: 10,
             left: 10,
             child: Text(
               'Erros: $erros',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-
-          // botão de reiniciar 
           Positioned(
             top: 10,
             right: 10,
             child: FloatingActionButton(
               mini: true,
               onPressed: () => _generateButtons(context),
-              child: Icon(Icons.refresh),
+              child: const Icon(Icons.refresh),
             ),
           ),
-
-          // botões
           ..._buttonInfos.map((btn) {
             return Positioned(
               left: btn.left,
@@ -188,15 +182,13 @@ class _TmtAState extends State<TmtA> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      shape: CircleBorder(),
+                      shape: const CircleBorder(),
                       backgroundColor: btn.disabled ? Colors.grey : null,
                     ),
                     onPressed: btn.disabled
                         ? null
-                        : () {
-                            _disableButton(btn.number);
-                          },
-                    child: Text('${btn.number}'),
+                        : () => _disableButton(btn.value),
+                    child: Text(btn.value),
                   ),
                 ),
               ),

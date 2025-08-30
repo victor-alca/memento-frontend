@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
+import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/auth/presentation/pages/patient_home_page.dart';
 import '../../features/auth/presentation/pages/doctor_home_page.dart';
@@ -73,6 +74,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.tmtA,
       builder: (context, state) => TmtA(),
+    ),
+    GoRoute(
+      path: AppRoutes.tmtB,
+      builder: (context, state) => TmtB(),
     ),
     GoRoute(
       path: AppRoutes.resultadoTeste,
