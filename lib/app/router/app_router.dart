@@ -72,6 +72,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(path: AppRoutes.tmtA, builder: (context, state) => TmtA()),
     GoRoute(
+      path: AppRoutes.stroopTest,
+      builder: (context, state) => const StroopTestPage(),
+    ),
+    GoRoute(
       path: AppRoutes.resultadoTeste,
       builder: (context, state) {
         final args = state.extra as ResultadoTesteArgs;

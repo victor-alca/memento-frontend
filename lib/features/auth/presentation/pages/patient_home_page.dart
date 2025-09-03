@@ -82,7 +82,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.orange.shade200,
                       iconColor: Colors.brown,
                       onTap: () {
-                        // TODO: Navegar para Trail Making Test
+                        context.go(AppRoutes.tmtA);
                       },
                     ),
                     _buildTestCard(
@@ -91,7 +91,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.green.shade200,
                       iconColor: Colors.green.shade700,
                       onTap: () {
-                        // TODO: Navegar para Stroop Test
+                        context.go(AppRoutes.stroopTest);
                       },
                     ),
                     _buildTestCard(
