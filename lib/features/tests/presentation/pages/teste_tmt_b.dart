@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 
 // Classe para armazenar dados do botão
 class ButtonInfoB {
@@ -130,6 +133,16 @@ class _TmtBState extends State<TmtB> {
         'pontuacao': pontuacao,
         'tempo_total': tempoTotal,
         'data': DateTime.now().toIso8601String(),
+      });
+
+        Future.delayed(Duration.zero, () {
+        context.go(
+          AppRoutes.resultadoTeste,
+          extra: ResultadoTesteArgs.tmt(
+            pontuacao: pontuacao,
+            tempoTotalMs: tempoTotal,
+          ),
+        );
       });
 
       debugPrint("Resultado salvo com sucesso!");

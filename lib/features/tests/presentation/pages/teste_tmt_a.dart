@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 
 
 // Classe para armazenar dados do botão
@@ -105,7 +108,7 @@ class _TmtAState extends State<TmtA> {
           _startTime = DateTime.now();
         }
 
-        if (btn.number == 20) {
+        if (btn.number == 5) {
           _salvarResultado();
         }
       } else {
@@ -123,13 +126,24 @@ class _TmtAState extends State<TmtA> {
       if (_startTime != null) {
         tempoTotal = DateTime.now()
             .difference(_startTime!)
-            .inMilliseconds / 1000.0;
+            .inMilliseconds / 1.0;
       }
 
       await supabase.from('resultados_tmt').insert({
         'pontuacao': pontuacao,
         'tempo_total': tempoTotal,
         'data': DateTime.now().toIso8601String(),
+      });
+
+      
+      Future.delayed(Duration.zero, () {
+        context.go(
+          AppRoutes.resultadoTeste,
+          extra: ResultadoTesteArgs.tmt(
+            pontuacao: pontuacao,
+            tempoTotalMs: tempoTotal,
+          ),
+        );
       });
 
       debugPrint("salvo com sucesso!");

@@ -3,12 +3,19 @@ import 'package:flutter/material.dart';
 class ResultadoTestePage extends StatelessWidget {
   final int pontuacao;
   final double tempoMedioMs;
+  final double tempoTotalMs;
 
   const ResultadoTestePage({
     super.key,
     required this.pontuacao,
     required this.tempoMedioMs,
-  });
+  }) : tempoTotalMs = 0.0;
+
+    const ResultadoTestePage.tmt({
+    super.key,
+    required this.pontuacao,
+    required this.tempoTotalMs,
+  }) : tempoMedioMs = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -115,8 +122,12 @@ class ResultadoTestePage extends StatelessWidget {
           _buildHeaderRow(),
           _buildDividerRow(),
           _buildDataRow(
-            'Tempo médio de resposta: ${(tempoMedioMs / 1000).toStringAsFixed(2)}s',
-            'Tempo médio de resposta: xx:xx',
+            tempoMedioMs > 0
+                ? 'Tempo médio de resposta: ${(tempoMedioMs / 1000).toStringAsFixed(2)}s'
+                : 'Tempo total: ${(tempoTotalMs / 1000).toStringAsFixed(2)}s',
+            tempoMedioMs > 0
+                ? 'Tempo médio de resposta: xx:xx'
+                : 'Tempo total: xx:xx',
           ),
           _buildDataRow(
             'Taxa de acerto médio: ${(pontuacao * 100) / 20}% ',
