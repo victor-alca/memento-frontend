@@ -29,7 +29,7 @@ class _StroopTestPageState extends State<StroopTestPage> {
   int indiceAtual = 0;
   int pontuacao = 0;
   int erros = 0;
-  int totalItens = 20;
+  int totalItens = 50;
   
   // Controle de tempo
   List<Duration> temposDeResposta = [];
