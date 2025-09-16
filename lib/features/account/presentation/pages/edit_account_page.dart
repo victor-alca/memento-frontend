@@ -6,6 +6,7 @@ import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/account/presentation/service/account_service.dart';
 import 'package:test_app/core/utils/validators.dart';
 import 'package:test_app/core/utils/format_utils.dart';
+import 'package:intl/intl.dart';
 
 class EditAccountPage extends StatefulWidget {
   const EditAccountPage({super.key});
@@ -31,9 +32,28 @@ class _EditAccountPageState extends State<EditAccountPage> {
     _loadCurrentUserData();
   }
 
+  String convertDateFormat(String dateStr) {
+    if (dateStr.isEmpty) return '';
+
+    try {
+      // Parse from dd/MM/yyyy
+      DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(dateStr);
+      // Return as yyyy-MM-dd
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
+    } catch (e) {
+      throw Exception('Invalid date format: $dateStr');
+    }
+  }
+
   Future<void> _loadCurrentUserData() async {
-    // Add logic to load current user data if available
-    // This would depend on your AccountService implementation
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+    if (user != null) {
+      nameController.text = user.name ?? '';
+      emailController.text = user.email ?? '';
+      if (user.birthDate != null) {
+        birthController.text = FormatUtils.formatPickedDate(user.birthDate!);
+      }
+    }
   }
 
   Future<void> _updateAccount() async {
@@ -48,12 +68,11 @@ class _EditAccountPageState extends State<EditAccountPage> {
     try {
       await _accountService.updateUserData(
         name: nameController.text.trim(),
-        birthDate: birthController.text,
+        birthDate: convertDateFormat(birthController.text),
       );
 
-      if (emailController.text.trim().isNotEmpty) {
-        await _accountService.changeEmail(emailController.text.trim());
-      }
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.refreshUser();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Dados atualizados com sucesso!')),
@@ -160,11 +179,12 @@ class _EditAccountPageState extends State<EditAccountPage> {
                     // Email
                     const Align(
                       alignment: Alignment.centerLeft,
-                      child: Text('Novo Email', style: TextStyle(fontSize: 16)),
+                      child: Text('Email', style: TextStyle(fontSize: 16)),
                     ),
                     const SizedBox(height: 4),
                     TextFormField(
                       controller: emailController,
+                      readOnly: true,
                       validator: (value) {
                         // Only validate if field is not empty (optional field)
                         if (value != null && value.trim().isNotEmpty) {
@@ -211,7 +231,12 @@ class _EditAccountPageState extends State<EditAccountPage> {
                       onTap: () async {
                         DateTime? pickedDate = await showDatePicker(
                           context: context,
-                          initialDate: DateTime.now(),
+                          initialDate:
+                              birthController.text.isNotEmpty == true
+                                  ? DateFormat(
+                                    'dd/MM/yyyy',
+                                  ).parse(birthController.text)
+                                  : DateTime.now(),
                           firstDate: DateTime(1900),
                           lastDate: DateTime.now(),
                         );
