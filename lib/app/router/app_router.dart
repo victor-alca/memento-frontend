@@ -35,7 +35,13 @@ final appRouter = GoRouter(
     final session = Supabase.instance.client.auth.currentSession;
     final loggingIn = state.matchedLocation == AppRoutes.login;
     final signingUp = state.matchedLocation == AppRoutes.signUp;
-    final isAuthPage = loggingIn || signingUp;
+    final isAuthRoute = state.matchedLocation == AppRoutes.auth;
+    final isAuthPage = loggingIn || signingUp || isAuthRoute;
+
+    // Se chegou via deeplink /auth, redireciona para login
+    if (isAuthRoute) {
+      return AppRoutes.login;
+    }
 
     // Se não está logado e não está em página de auth, vai para login
     if (session == null && !isAuthPage) {
@@ -52,6 +58,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.signUp,
       builder: (context, state) => const SignPage(),
+    ),
+    // Deeplink route - redireciona para login
+    GoRoute(
+      path: AppRoutes.auth,
+      builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
       path: AppRoutes.patientHome,
