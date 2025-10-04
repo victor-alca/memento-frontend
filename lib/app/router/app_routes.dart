@@ -10,6 +10,9 @@ class AppRoutes {
   static const accountSettings = '/account';
   static const editAccount = '/account/edit';
   static const changePassword = '/account/password';
+  static const patientsList = '/patients';
+  static const addPatient = '/patients/add';
+  static const confirmPatientAccess = '/confirm';
   // Deeplink routes
   static const auth = '/auth';
 }

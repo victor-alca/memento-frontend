@@ -116,7 +116,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                       color: Colors.blue.shade100,
                       iconColor: Colors.blue.shade700,
                       onTap: () {
-                        // TODO: Navegar para lista de pacientes
+                        context.push(AppRoutes.patientsList, extra: widget.user.id);
                       },
                     ),
                   ],

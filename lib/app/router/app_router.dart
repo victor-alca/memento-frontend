@@ -10,6 +10,9 @@ import 'package:test_app/features/account/presentation/pages/change_password_pag
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
+import 'package:test_app/features/patients/presentation/pages/patients_list_page.dart';
+import 'package:test_app/features/patients/presentation/pages/add_patient_page.dart';
+import 'package:test_app/features/patients/presentation/pages/confirm_patient_access_page.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
 
@@ -110,6 +113,27 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.changePassword,
       builder: (context, state) => const ChangePasswordPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.patientsList,
+      builder: (context, state) {
+        final doctorId = state.extra as String;
+        return PatientsListPage(doctorId: doctorId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.addPatient,
+      builder: (context, state) {
+        final doctorId = state.extra as String;
+        return AddPatientPage(doctorId: doctorId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.confirmPatientAccess,
+      builder: (context, state) {
+        final token = state.uri.queryParameters['token'] ?? '';
+        return ConfirmPatientAccessPage(token: token);
+      },
     ),
   ],
   errorBuilder:
