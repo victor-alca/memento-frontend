@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
-import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 
 class PatientHomePage extends StatefulWidget {
-  final UserModel user;
-
-  const PatientHomePage({
-    super.key,
-    required this.user,
-  });
+  const PatientHomePage({super.key});
 
   @override
   State<PatientHomePage> createState() => _PatientHomePageState();
@@ -27,40 +23,37 @@ class _PatientHomePageState extends State<PatientHomePage> {
   }
 
   Future<void> _logout() async {
-    try {
-      await _authService.signOut();
-      if (mounted) {
+    final success = await _authService.signOut();
+    if (mounted) {
+      if (success) {
         context.go(AppRoutes.login);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao sair: $e')),
-        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao sair')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Olá, ${widget.user.name}!'),
+        title: Text('Olá, ${user?.name}!'),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
-            onPressed: () {
-              // TODO: Navegar para perfil
-            },
+            onPressed:
+                () => context.go(
+                  '${AppRoutes.accountSettings}?from=patient-home',
+                ),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
         ],
       ),
       body: SafeArea(
@@ -72,10 +65,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
               const SizedBox(height: 20),
               const Text(
                 'Bem-vindo à página inicial!',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
               const SizedBox(height: 40),
 
@@ -101,7 +91,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.green.shade200,
                       iconColor: Colors.green.shade700,
                       onTap: () {
-                        // TODO: Navegar para Stroop Test
+                        context.go(AppRoutes.stroopTest);
                       },
                     ),
                     _buildTestCard(
@@ -158,11 +148,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 ),
               ),
             ),
-            Icon(
-              icon,
-              size: 32,
-              color: iconColor,
-            ),
+            Icon(icon, size: 32, color: iconColor),
           ],
         ),
       ),

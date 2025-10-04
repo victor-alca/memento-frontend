@@ -50,7 +50,7 @@ class _TmtAState extends State<TmtA> {
     final double buttonSize = 40;
     final double safeTop = kToolbarHeight + 20; // evita appbar e contador
     final double padding = 5; // margem entre botões
-    final double restartBtnWidth = 56; 
+    final double restartBtnWidth = 56;
     final double restartBtnHeight = 56;
 
     lastNumber = 0;
