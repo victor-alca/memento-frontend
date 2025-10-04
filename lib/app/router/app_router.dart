@@ -10,8 +10,10 @@ import 'package:test_app/features/account/presentation/pages/change_password_pag
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
+import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
+import 'package:test_app/features/tests/presentation/pages/teste_tmt_a.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -85,6 +87,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.stroopTest,
       builder: (context, state) => const StroopTestPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.tmtB,
+      builder: (context, state) => TmtB(),
     ),
     GoRoute(
       path: AppRoutes.resultadoTeste,
