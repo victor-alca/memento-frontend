@@ -1,12 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/patient_model.dart';
 import '../../auth/models/user_model.dart';
+import '../../../core/services/email_service.dart';
 import 'dart:math';
 
 class PatientService {
   final SupabaseClient _client;
+  final EmailService _emailService;
 
-  PatientService(this._client);
+  PatientService(this._client) : _emailService = EmailService();
 
   /// Busca um usuário existente pelo email
   Future<UserModel?> searchUserByEmail(String email) async {
@@ -59,6 +61,19 @@ class PatientService {
         throw Exception('Falha ao criar usuário');
       }
 
+      // Enviar email de boas-vindas
+      try {
+        await _emailService.sendWelcomeEmail(
+          patientEmail: email,
+          patientName: name,
+          temporaryPassword: password,
+        );
+        print('Email de boas-vindas enviado para $email');
+      } catch (emailError) {
+        print('Erro ao enviar email de boas-vindas: $emailError');
+        // Continua mesmo se o email falhar
+      }
+
       return true;
     } catch (e) {
       print('Erro ao criar paciente: $e');
@@ -70,6 +85,8 @@ class PatientService {
   Future<bool> linkPatientToDoctor({
     required String doctorId,
     required String patientUserId,
+    required String patientEmail, // Adicionar email como parâmetro
+    required String patientName,  // Adicionar nome como parâmetro
   }) async {
     try {
       // Primeiro, buscar o ID do médico na tabela doctors
@@ -103,8 +120,12 @@ class PatientService {
         'token_expires_at': expiresAt.toIso8601String(),
       });
 
-      // TODO: Enviar email de confirmação aqui
-      await _sendConfirmationEmail(patientUserId, confirmationToken);
+      // Enviar email de confirmação
+      await _sendConfirmationEmail(
+        patientEmail: patientEmail,
+        patientName: patientName,
+        confirmationToken: confirmationToken,
+      );
 
       return true;
     } catch (e) {
@@ -156,18 +177,28 @@ class PatientService {
     );
   }
 
-  /// Envia email de confirmação usando RPC do Supabase
-  Future<void> _sendConfirmationEmail(String patientUserId, String token) async {
+  /// Envia email de confirmação via SMTP
+  Future<void> _sendConfirmationEmail({
+    required String patientEmail,
+    required String patientName,
+    required String confirmationToken,
+  }) async {
     try {
-      // Obter o ID do médico atual
+      // Buscar dados do médico atual
       final currentUser = _client.auth.currentUser;
       if (currentUser == null) throw Exception('Usuário não autenticado');
 
-      await _client.rpc('send_confirmation_email', params: {
-        'patient_user_id': patientUserId,
-        'doctor_user_id': currentUser.id,
-        'confirmation_token': token,
-      });
+      final doctorName = currentUser.userMetadata?['name'] as String? ?? 'Médico';
+
+      // Enviar email via SMTP
+      await _emailService.sendPatientConfirmationEmail(
+        patientEmail: patientEmail,
+        patientName: patientName,
+        doctorName: doctorName,
+        confirmationToken: confirmationToken,
+      );
+
+      print('Email de confirmação enviado com sucesso para $patientEmail!');
     } catch (e) {
       print('Erro ao enviar email de confirmação: $e');
       // Não falha a operação por causa do email

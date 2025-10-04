@@ -39,15 +39,16 @@ final appRouter = GoRouter(
     final loggingIn = state.matchedLocation == AppRoutes.login;
     final signingUp = state.matchedLocation == AppRoutes.signUp;
     final isAuthRoute = state.matchedLocation == AppRoutes.auth;
-    final isAuthPage = loggingIn || signingUp || isAuthRoute;
+    final isConfirmRoute = state.matchedLocation == AppRoutes.confirmPatientAccess;
+    final isPublicPage = loggingIn || signingUp || isAuthRoute || isConfirmRoute;
 
     // Se chegou via deeplink /auth, redireciona para login
     if (isAuthRoute) {
       return AppRoutes.login;
     }
 
-    // Se não está logado e não está em página de auth, vai para login
-    if (session == null && !isAuthPage) {
+    // Se não está logado e não está em página pública, vai para login
+    if (session == null && !isPublicPage) {
       return AppRoutes.login;
     }
 

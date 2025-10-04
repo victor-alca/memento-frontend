@@ -97,6 +97,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
       await _patientService.linkPatientToDoctor(
         doctorId: widget.doctorId,
         patientUserId: _foundUser!.id,
+        patientEmail: _foundUser!.email,
+        patientName: _foundUser!.name,
       );
 
       if (mounted) {
@@ -139,6 +141,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
         await _patientService.linkPatientToDoctor(
           doctorId: widget.doctorId,
           patientUserId: user.id,
+          patientEmail: _emailController.text,
+          patientName: _nameController.text,
         );
       }
 
@@ -333,7 +337,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   TextFormField(
                     controller: _cpfController,
                     decoration: const InputDecoration(
-                      labelText: 'CPF (opcional)',
+                      labelText: 'CPF',
                       border: OutlineInputBorder(),
                       helperText: 'Será usado como senha inicial',
                     ),
