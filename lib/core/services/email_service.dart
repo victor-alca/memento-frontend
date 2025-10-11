@@ -22,8 +22,8 @@ class EmailService {
     required String confirmationToken,
   }) async {
     try {
-      // Deep link para abrir diretamente no app
-      final confirmationUrl = 'memento://confirm?token=$confirmationToken';
+      // URL do Cloudflare Worker que redireciona para o deep link
+      final confirmationUrl = 'https://memento-deeplink-redirect.victoralc887.workers.dev/?token=$confirmationToken';
       
       final message = Message()
         ..from = Address(_username, 'Sistema Memento')
@@ -83,19 +83,31 @@ class EmailService {
     required String confirmationUrl,
   }) {
     return '''
-    <h2>Confirme o acesso do médico / Confirm doctor access</h2>
-
-    <p>Olá $patientName, bem-vindo ao <strong>Memento</strong>,</p>
-    <p><strong>Dr. $doctorName</strong> está solicitando acesso aos seus dados.</p>
-    <p>Para confirmar este acesso, clique no link abaixo:</p>
-    <p><a href="$confirmationUrl">Confirmar acesso / Confirm access</a></p>
-
-    <hr>
-
-    <p>Hello $patientName, welcome to <strong>Memento</strong>,</p>
-    <p><strong>Dr. $doctorName</strong> is requesting access to your data.</p>
-    <p>To confirm this access, click the link below:</p>
-    <p><a href="$confirmationUrl">Confirm access</a></p>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Confirmação de Acesso - Memento</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #2563eb;">Confirme o acesso do médico</h2>
+    
+    <p>Olá $patientName,</p>
+    <p><strong>Dr. $doctorName</strong> está solicitando acesso aos seus dados no sistema Memento.</p>
+    <p>Para confirmar este acesso, clique no botão abaixo:</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="$confirmationUrl" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Confirmar Acesso</a>
+    </div>
+    
+    <p style="color: #666; font-size: 14px;">Se você não conseguir clicar no botão, copie e cole este link no seu navegador:</p>
+    <p style="color: #666; font-size: 14px; word-break: break-all;">$confirmationUrl</p>
+    
+    <hr style="border: 1px solid #eee; margin: 30px 0;">
+    
+    <p style="color: #666; font-size: 12px;">Este é um email automático do sistema Memento. Por favor, não responda.</p>
+</body>
+</html>
     ''';
   }
 
@@ -106,21 +118,33 @@ class EmailService {
     required String temporaryPassword,
   }) {
     return '''
-    <h2>Bem-vindo ao Memento / Welcome to Memento</h2>
-
-    <p>Olá $patientName, bem-vindo ao <strong>Memento</strong>,</p>
-    <p>Sua conta foi criada com sucesso!</p>
-    <p><strong>Email:</strong> $email</p>
-    <p><strong>Senha Temporária:</strong> $temporaryPassword</p>
-    <p>Altere sua senha no primeiro acesso.</p>
-
-    <hr>
-
-    <p>Hello $patientName, welcome to <strong>Memento</strong>,</p>
-    <p>Your account has been created successfully!</p>
-    <p><strong>Email:</strong> $email</p>
-    <p><strong>Temporary Password:</strong> $temporaryPassword</p>
-    <p>Please change your password on first login.</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Bem-vindo ao Memento</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #2563eb;">Bem-vindo ao Memento</h2>
+    
+    <p>Olá $patientName,</p>
+    <p>Sua conta foi criada com sucesso no sistema Memento!</p>
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #2563eb;">Dados de Acesso</h3>
+        <p><strong>Email:</strong> $email</p>
+        <p><strong>Senha Temporária:</strong> $temporaryPassword</p>
+    </div>
+    
+    <p style="color: #dc2626; font-weight: bold;">⚠️ Importante: Altere sua senha no primeiro acesso por segurança.</p>
+    
+    <p>Para acessar o sistema, use o aplicativo Memento instalado no seu dispositivo.</p>
+    
+    <hr style="border: 1px solid #eee; margin: 30px 0;">
+    
+    <p style="color: #666; font-size: 12px;">Este é um email automático do sistema Memento. Por favor, não responda.</p>
+</body>
+</html>
     ''';
   }
 }

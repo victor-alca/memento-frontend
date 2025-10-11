@@ -40,7 +40,8 @@ final appRouter = GoRouter(
     final signingUp = state.matchedLocation == AppRoutes.signUp;
     final isAuthRoute = state.matchedLocation == AppRoutes.auth;
     final isConfirmRoute = state.matchedLocation == AppRoutes.confirmPatientAccess;
-    final isPublicPage = loggingIn || signingUp || isAuthRoute || isConfirmRoute;
+    final isRootWithToken = state.matchedLocation == '/' && state.uri.queryParameters['token'] != null;
+    final isPublicPage = loggingIn || signingUp || isAuthRoute || isConfirmRoute || isRootWithToken;
 
     // Se chegou via deeplink /auth, redireciona para login
     if (isAuthRoute) {
@@ -55,6 +56,19 @@ final appRouter = GoRouter(
     return null;
   },
   routes: [
+    // Rota raiz para capturar deep links com token
+    GoRoute(
+      path: '/',
+      builder: (context, state) {
+        final token = state.uri.queryParameters['token'];
+        if (token != null && token.isNotEmpty) {
+          // Se tem token, vai para confirmação
+          return ConfirmPatientAccessPage(token: token);
+        }
+        // Senão, redireciona para login
+        return const LoginPage();
+      },
+    ),
     GoRoute(
       path: AppRoutes.login,
       builder: (context, state) => const LoginPage(),
