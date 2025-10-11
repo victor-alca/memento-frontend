@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:test_app/app/theme/app_colors.dart';
 import 'package:test_app/app/theme/app_spacing.dart';
 import 'package:test_app/features/patients/models/patient_model.dart';
@@ -239,33 +240,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
             ),
             if (!patient.isConfirmed) ...[
               const SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.email_outlined,
-                      size: 16,
-                      color: Colors.orange.shade600,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'Aguardando confirmação do paciente via email',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.orange.shade700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildPendingConfirmationWidget(patient),
             ],
           ],
         ),
@@ -294,7 +269,112 @@ class _PatientsListPageState extends State<PatientsListPage> {
     );
   }
 
+  Widget _buildPendingConfirmationWidget(PatientModel patient) {
+    final isTokenExpired = _patientService.isTokenExpired(patient.tokenExpiresAt);
+    
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: isTokenExpired ? Colors.red.shade50 : Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(
+          color: isTokenExpired ? Colors.red.shade200 : Colors.orange.shade200,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isTokenExpired ? Icons.warning_outlined : Icons.email_outlined,
+                size: 16,
+                color: isTokenExpired ? Colors.red.shade600 : Colors.orange.shade600,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  isTokenExpired 
+                      ? 'Token de confirmação expirado'
+                      : 'Aguardando confirmação do paciente via email',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isTokenExpired ? Colors.red.shade700 : Colors.orange.shade700,
+                    fontWeight: isTokenExpired ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (isTokenExpired) ...[
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _renewToken(patient),
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Renovar Token'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade600,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  textStyle: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ),
+          ] else if (patient.tokenExpiresAt != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Expira em: ${_formatDate(patient.tokenExpiresAt!)}',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _renewToken(PatientModel patient) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Renovando token...'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+
+      final success = await _patientService.renewConfirmationToken(
+        patientId: patient.id,
+        doctorId: widget.doctorId,
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Token renovado! Novo email enviado ao paciente.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Recarregar a lista para mostrar o novo status
+        _loadPatients();
+      } else {
+        throw Exception('Falha ao renovar token');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao renovar token: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';  
   }
 }

@@ -45,9 +45,18 @@ class PatientService {
   }) async {
     try {
       // Criar senha padrão com o CPF (sem pontos e traços)
-      final password = cpf?.replaceAll(RegExp(r'[^\d]'), '') ?? '123456';
+      String password = cpf?.replaceAll(RegExp(r'[^\d]'), '') ?? '123456';
+      
+      // Garantir que a senha tenha pelo menos 6 caracteres (requisito do Supabase)
+      if (password.length < 6) {
+        password = password.padRight(6, '0'); // Adiciona zeros se necessário
+      }
+      
+      print('CPF original: $cpf');
+      print('Senha gerada: $password');
 
       // Criar usuário no Supabase Auth
+      print('Tentando criar usuário com email: $email e senha: $password');
       final authResponse = await _client.auth.signUp(
         email: email,
         password: password,
@@ -57,8 +66,11 @@ class PatientService {
         },
       );
 
+      print('Resposta do Supabase: ${authResponse.user?.id}');
+      
       if (authResponse.user == null) {
-        throw Exception('Falha ao criar usuário');
+        print('Erro na criação do usuário: ${authResponse.session}');
+        throw Exception('Falha ao criar usuário - verifique se o email já existe');
       }
 
       // Enviar email de boas-vindas
@@ -217,5 +229,63 @@ class PatientService {
       print('Erro ao confirmar acesso: $e');
       return false;
     }
+  }
+
+  /// Renova o token de confirmação para um paciente específico
+  Future<bool> renewConfirmationToken({
+    required int patientId,
+    required String doctorId,
+  }) async {
+    try {
+      // Gerar novo token
+      final newToken = _generateConfirmationToken();
+      final expiresAt = DateTime.now().add(const Duration(hours: 24));
+
+      // Atualizar no banco
+      await _client.from('doctor_patients').update({
+        'confirmation_token': newToken,
+        'token_expires_at': expiresAt.toIso8601String(),
+        'confirmed': false, // Reset confirmation status
+      }).eq('id', patientId);
+
+      // Buscar dados do paciente para enviar novo email
+      final patientData = await _client
+          .from('doctor_patients')
+          .select('*, profiles!doctor_patients_user_id_fkey(name, email)')
+          .eq('id', patientId)
+          .single();
+
+      final patientEmail = patientData['profiles']['email'] as String;
+      final patientName = patientData['profiles']['name'] as String;
+
+      // Buscar nome do médico
+      final doctorData = await _client
+          .from('profiles')
+          .select('name')
+          .eq('id', doctorId)
+          .single();
+
+      final doctorName = doctorData['name'] as String;
+
+      // Enviar novo email de confirmação
+      await _emailService.sendPatientConfirmationEmail(
+        patientEmail: patientEmail,
+        patientName: patientName,
+        doctorName: doctorName,
+        confirmationToken: newToken,
+      );
+
+      print('Token renovado e email enviado para $patientEmail');
+      return true;
+    } catch (e) {
+      print('Erro ao renovar token: $e');
+      return false;
+    }
+  }
+
+  /// Verifica se o token expirou
+  bool isTokenExpired(DateTime? tokenExpiresAt) {
+    if (tokenExpiresAt == null) return true;
+    return DateTime.now().isAfter(tokenExpiresAt);
   }
 }
