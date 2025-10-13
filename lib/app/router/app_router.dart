@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
-import 'package:test_app/core/widgets/auth_wrapper.dart';
 import 'package:test_app/features/account/presentation/pages/account_settings_page.dart';
 import 'package:test_app/features/account/presentation/pages/change_password_page.dart';
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
@@ -13,8 +12,10 @@ import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/patients/presentation/pages/patients_list_page.dart';
 import 'package:test_app/features/patients/presentation/pages/add_patient_page.dart';
 import 'package:test_app/features/patients/presentation/pages/confirm_patient_access_page.dart';
+import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
+import 'package:test_app/features/tests/presentation/pages/line_chart.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -104,6 +105,7 @@ final appRouter = GoRouter(
       path: AppRoutes.stroopTest,
       builder: (context, state) => const StroopTestPage(),
     ),
+    GoRoute(path: AppRoutes.tmtB, builder: (context, state) => TmtB()),
     GoRoute(
       path: AppRoutes.resultadoTeste,
       builder: (context, state) {
@@ -113,6 +115,10 @@ final appRouter = GoRouter(
           tempoMedioMs: args.tempoMedioMs,
         );
       },
+    ),
+    GoRoute(
+      path: AppRoutes.lineChart,
+      builder: (context, state) => const DashboardScreen(),
     ),
     GoRoute(
       path: AppRoutes.accountSettings,

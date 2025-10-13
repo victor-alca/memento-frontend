@@ -77,10 +77,11 @@ class AuthService {
       UserRole userRole = UserRole.patient;
       String? crm;
       String? userName;
+      String? email;
       DateTime? birthDate;
 
+      // Check if user is a doctor
       try {
-        // Verificar se é médico
         final doctorResponse =
             await _client
                 .from('doctors')
@@ -93,36 +94,55 @@ class AuthService {
           crm = doctorResponse['crm'] as String?;
         }
       } catch (e) {
-        // Se erro, continua como paciente
+        // If error, continue as patient
       }
 
-      // Usar dados do auth.user
-      userName =
-          _client.auth.currentUser?.userMetadata?['name'] as String? ??
-          'Usuário';
-      final email = _client.auth.currentUser?.email ?? '';
+      // Fetch user data from 'users' table (or your actual table name)
+      try {
+        final userResponse =
+            await _client
+                .from('users') // Replace with your actual table name
+                .select('name, birth_date')
+                .eq('id', userId)
+                .single();
 
-      // Obter birth_date do metadata
-      final birthDateStr =
-          _client.auth.currentUser?.userMetadata?['birth_date'] as String?;
-      if (birthDateStr != null) {
-        try {
-          birthDate = DateTime.parse(birthDateStr);
-        } catch (e) {
-          // Ignore parsing error
+        userName = userResponse['name'] as String?;
+        email = _client.auth.currentUser?.email;
+
+        final birthDateStr = userResponse['birth_date'] as String?;
+        if (birthDateStr != null) {
+          try {
+            birthDate = DateTime.parse(birthDateStr);
+          } catch (e) {
+            // Ignore parsing error
+          }
+        }
+      } catch (e) {
+        // If users table doesn't have the data, fallback to auth
+        userName = _client.auth.currentUser?.userMetadata?['name'] as String?;
+        email = _client.auth.currentUser?.email;
+
+        final birthDateStr =
+            _client.auth.currentUser?.userMetadata?['birth_date'] as String?;
+        if (birthDateStr != null) {
+          try {
+            birthDate = DateTime.parse(birthDateStr);
+          } catch (e) {
+            // Ignore parsing error
+          }
         }
       }
 
       return UserModel(
         id: userId,
-        name: userName,
-        email: email,
+        name: userName ?? 'Usuário',
+        email: email ?? '',
         birthDate: birthDate,
         role: userRole,
         crm: crm,
       );
     } catch (e) {
-      // Fallback: usuário básico
+      // Fallback: basic user
       return UserModel(
         id: userId,
         name:

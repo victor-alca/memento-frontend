@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:test_app/app/router/app_routes.dart';
 
 class ResultadoTestePage extends StatelessWidget {
   final int pontuacao;
   final double tempoMedioMs;
+  final double tempoTotalMs;
 
   const ResultadoTestePage({
     super.key,
     required this.pontuacao,
     required this.tempoMedioMs,
-  });
+  }) : tempoTotalMs = 0.0;
+
+  const ResultadoTestePage.tmt({
+    super.key,
+    required this.pontuacao,
+    required this.tempoTotalMs,
+  }) : tempoMedioMs = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -115,8 +124,12 @@ class ResultadoTestePage extends StatelessWidget {
           _buildHeaderRow(),
           _buildDividerRow(),
           _buildDataRow(
-            'Tempo médio de resposta: ${(tempoMedioMs / 1000).toStringAsFixed(2)}s',
-            'Tempo médio de resposta: xx:xx',
+            tempoMedioMs > 0
+                ? 'Tempo médio de resposta: ${(tempoMedioMs / 1000).toStringAsFixed(2)}s'
+                : 'Tempo total: ${(tempoTotalMs / 1000).toStringAsFixed(2)}s',
+            tempoMedioMs > 0
+                ? 'Tempo médio de resposta: xx:xx'
+                : 'Tempo total: xx:xx',
           ),
           _buildDataRow(
             'Taxa de acerto médio: ${(pontuacao * 100) / 20}% ',
@@ -160,12 +173,7 @@ class ResultadoTestePage extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const TelaAnterior()),
-            );
-          },
+          onPressed: () => context.go(AppRoutes.patientHome),
           icon: const Icon(Icons.arrow_back),
           label: const Text('Voltar'),
           style: ElevatedButton.styleFrom(

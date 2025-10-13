@@ -6,6 +6,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
+import 'package:test_app/features/auth/service/auth_service.dart';
+import 'package:test_app/app/provider/supabase_provider.dart';
+import 'package:test_app/features/auth/models/user_model.dart';
 
 class StroopTestPage extends StatefulWidget {
   const StroopTestPage({super.key});
@@ -48,10 +51,12 @@ class _StroopTestPageState extends State<StroopTestPage> {
   // Controle de tempo
   int _timeRemaining = 15;
   
+  late final AuthService authService;
   @override
   void initState() {
     super.initState();
     _initPermissionsAndSpeech();
+    authService = AuthService(supabase.client);
   }
   
   void _initPermissionsAndSpeech() async {
@@ -321,12 +326,48 @@ class _StroopTestPageState extends State<StroopTestPage> {
     
     // Salvar no Supabase
     final supabase = Supabase.instance.client;
-    await supabase.from('resultados_stroop').insert({
-      'pontuacao': pontuacao,
-      'tempo_medio_ms': tempoMedio,
-      'erros': erros,
-      'data': DateTime.now().toIso8601String(),
-    });
+
+    final User? user = supabase.auth.currentUser;
+      debugPrint(user?.id);
+      if (user != null) {
+      UserModel _role = await authService.getUserData(user.id);
+      if(_role.isPatient){
+      // Busca o id do paciente associado ao user.id
+      final patient = await supabase
+      .from('patients')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+      final patientId = patient?['id'];
+        await supabase.from('patient_tests').insert({
+          'patient_id': patientId,
+          'test_id': 1,
+          'score': pontuacao,
+          'average_time': tempoMedio,
+          'time_spent': somaTempos,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': null,
+        });
+      } else if(_role.isDoctor){
+        // Busca o id do medico associado ao user.id
+        final doctor = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        final doctorId = doctor?['id'];
+        await supabase.from('patient_tests').insert({
+          // no futuro deve ser colocado o id do paciente associado ao medico
+          'patient_id': null,
+          'test_id': 1,
+          'score': pontuacao,
+          'average_time': tempoMedio,
+          'time_spent': somaTempos,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': doctorId,
+        });
+      }
+      }
     
     // Navegar para tela de resultado
     if (mounted) {
