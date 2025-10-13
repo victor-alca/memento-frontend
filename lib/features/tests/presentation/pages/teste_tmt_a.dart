@@ -71,8 +71,10 @@ class _TmtAState extends State<TmtA> {
         overlap = false;
 
         left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top = safeTop +
-            _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
+        top =
+            safeTop +
+            _random.nextDouble() *
+                (screenSize.height - safeTop - buttonSize - padding);
 
         // verifica colisão com outros botões
         for (var other in _buttonInfos) {
@@ -88,14 +90,9 @@ class _TmtAState extends State<TmtA> {
             top < safeTop + restartBtnHeight + 10) {
           overlap = true;
         }
-
       } while (overlap);
 
-      _buttonInfos.add(ButtonInfo(
-        number: number,
-        left: left,
-        top: top,
-      ));
+      _buttonInfos.add(ButtonInfo(number: number, left: left, top: top));
     }
 
     setState(() {});
@@ -113,7 +110,7 @@ class _TmtAState extends State<TmtA> {
           _startTime = DateTime.now();
         }
 
-        if (btn.number == 5) {
+        if (btn.number == 20) {
           _salvarResultado();
         }
       } else {
@@ -129,9 +126,8 @@ class _TmtAState extends State<TmtA> {
 
       double tempoTotal = 0.0;
       if (_startTime != null) {
-        tempoTotal = DateTime.now()
-            .difference(_startTime!)
-            .inMilliseconds / 1.0;
+        tempoTotal =
+            DateTime.now().difference(_startTime!).inMilliseconds / 1.0;
       }
 
       final User? user = supabase.auth.currentUser;
@@ -176,7 +172,6 @@ class _TmtAState extends State<TmtA> {
       }
       }
 
-      
       Future.delayed(Duration.zero, () {
         context.go(
           AppRoutes.resultadoTeste,
@@ -192,7 +187,6 @@ class _TmtAState extends State<TmtA> {
       debugPrint("Erro ao salvar resultado: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +213,7 @@ class _TmtAState extends State<TmtA> {
             ),
           ),
 
-          // botão de reiniciar 
+          // botão de reiniciar
           Positioned(
             top: 10,
             right: 10,
@@ -246,11 +240,12 @@ class _TmtAState extends State<TmtA> {
                       shape: CircleBorder(),
                       backgroundColor: btn.disabled ? Colors.grey : null,
                     ),
-                    onPressed: btn.disabled
-                        ? null
-                        : () {
-                            _disableButton(btn.number);
-                          },
+                    onPressed:
+                        btn.disabled
+                            ? null
+                            : () {
+                              _disableButton(btn.number);
+                            },
                     child: Text('${btn.number}'),
                   ),
                 ),
