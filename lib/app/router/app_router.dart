@@ -9,6 +9,9 @@ import 'package:test_app/features/account/presentation/pages/change_password_pag
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
+import 'package:test_app/features/patients/presentation/pages/patients_list_page.dart';
+import 'package:test_app/features/patients/presentation/pages/add_patient_page.dart';
+import 'package:test_app/features/patients/presentation/pages/confirm_patient_access_page.dart';
 import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
@@ -37,21 +40,36 @@ final appRouter = GoRouter(
     final loggingIn = state.matchedLocation == AppRoutes.login;
     final signingUp = state.matchedLocation == AppRoutes.signUp;
     final isAuthRoute = state.matchedLocation == AppRoutes.auth;
-    final isAuthPage = loggingIn || signingUp || isAuthRoute;
+    final isConfirmRoute = state.matchedLocation == AppRoutes.confirmPatientAccess;
+    final isRootWithToken = state.matchedLocation == '/' && state.uri.queryParameters['token'] != null;
+    final isPublicPage = loggingIn || signingUp || isAuthRoute || isConfirmRoute || isRootWithToken;
 
     // Se chegou via deeplink /auth, redireciona para login
     if (isAuthRoute) {
       return AppRoutes.login;
     }
 
-    // Se não está logado e não está em página de auth, vai para login
-    if (session == null && !isAuthPage) {
+    // Se não está logado e não está em página pública, vai para login
+    if (session == null && !isPublicPage) {
       return AppRoutes.login;
     }
 
     return null;
   },
   routes: [
+    // Rota raiz para capturar deep links com token
+    GoRoute(
+      path: '/',
+      builder: (context, state) {
+        final token = state.uri.queryParameters['token'];
+        if (token != null && token.isNotEmpty) {
+          // Se tem token, vai para confirmação
+          return ConfirmPatientAccessPage(token: token);
+        }
+        // Senão, redireciona para login
+        return const LoginPage();
+      },
+    ),
     GoRoute(
       path: AppRoutes.login,
       builder: (context, state) => const LoginPage(),
@@ -116,6 +134,27 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.changePassword,
       builder: (context, state) => const ChangePasswordPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.patientsList,
+      builder: (context, state) {
+        final doctorId = state.extra as String;
+        return PatientsListPage(doctorId: doctorId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.addPatient,
+      builder: (context, state) {
+        final doctorId = state.extra as String;
+        return AddPatientPage(doctorId: doctorId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.confirmPatientAccess,
+      builder: (context, state) {
+        final token = state.uri.queryParameters['token'] ?? '';
+        return ConfirmPatientAccessPage(token: token);
+      },
     ),
   ],
   errorBuilder:

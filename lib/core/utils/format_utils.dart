@@ -23,6 +23,27 @@ class FormatUtils {
   static String formatPickedDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
+
+  /// Formata DateTime para exibição (DD/MM/YYYY)
+  static String formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  /// Parse string DD/MM/YYYY para DateTime
+  static DateTime? parseDate(String dateString) {
+    try {
+      final parts = dateString.split('/');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class CrmFormatter extends TextInputFormatter {

@@ -40,6 +40,7 @@ dependencies:
   speech_to_text: ^7.0.0
   permission_handler: ^11.0.0
   intl: ^0.20.2
+  mailer: ^6.0.1
   fl_chart: ^1.1.1
   table_calendar: ^3.1.2
 
