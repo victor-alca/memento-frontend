@@ -7,6 +7,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appRouter = createAppRouter(context);
     return MaterialApp.router(
       title: AppConstants.appName,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.teal),
