@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/account/presentation/pages/account_settings_page.dart';
 import 'package:test_app/features/account/presentation/pages/change_password_page.dart';
@@ -32,134 +34,176 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
 final _authChanges = Supabase.instance.client.auth.onAuthStateChange;
 
-final appRouter = GoRouter(
-  initialLocation: AppRoutes.login,
-  refreshListenable: GoRouterRefreshStream(_authChanges),
-  redirect: (context, state) {
-    final session = Supabase.instance.client.auth.currentSession;
-    final loggingIn = state.matchedLocation == AppRoutes.login;
-    final signingUp = state.matchedLocation == AppRoutes.signUp;
-    final isAuthRoute = state.matchedLocation == AppRoutes.auth;
-    final isConfirmRoute = state.matchedLocation == AppRoutes.confirmPatientAccess;
-    final isRootWithToken = state.matchedLocation == '/' && state.uri.queryParameters['token'] != null;
-    final isPublicPage = loggingIn || signingUp || isAuthRoute || isConfirmRoute || isRootWithToken;
+// You'll need to pass the BuildContext to access the provider
+GoRouter createAppRouter(BuildContext context) {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // Se chegou via deeplink /auth, redireciona para login
-    if (isAuthRoute) {
-      return AppRoutes.login;
-    }
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: Listenable.merge([
+      GoRouterRefreshStream(_authChanges),
+      userProvider,
+    ]),
+    redirect: (context, state) {
+      final session = Supabase.instance.client.auth.currentSession;
+      final loggingIn = state.matchedLocation == AppRoutes.login;
+      final signingUp = state.matchedLocation == AppRoutes.signUp;
+      final isAuthRoute = state.matchedLocation == AppRoutes.auth;
+      final isConfirmRoute =
+          state.matchedLocation == AppRoutes.confirmPatientAccess;
+      final isRootWithToken =
+          state.matchedLocation == '/' &&
+          state.uri.queryParameters['token'] != null;
+      final isPublicPage =
+          loggingIn ||
+          signingUp ||
+          isAuthRoute ||
+          isConfirmRoute ||
+          isRootWithToken;
 
-    // Se não está logado e não está em página pública, vai para login
-    if (session == null && !isPublicPage) {
-      return AppRoutes.login;
-    }
+      // Se chegou via deeplink /auth, redireciona para login
+      if (isAuthRoute) {
+        return AppRoutes.login;
+      }
 
-    return null;
-  },
-  routes: [
-    // Rota raiz para capturar deep links com token
-    GoRoute(
-      path: '/',
-      builder: (context, state) {
-        final token = state.uri.queryParameters['token'];
-        if (token != null && token.isNotEmpty) {
-          // Se tem token, vai para confirmação
-          return ConfirmPatientAccessPage(token: token);
+      // Se não está logado e não está em página pública, vai para login
+      if (session == null && !isPublicPage) {
+        return AppRoutes.login;
+      }
+      if (session != null && userProvider.isLoading) {
+        return null; // Aguarda o provider terminar de carregar
+      }
+      // Se está logado e está em página de login/signup, redireciona para home apropriado
+      if (session != null &&
+          (state.matchedLocation == AppRoutes.login ||
+              state.matchedLocation == AppRoutes.signUp ||
+              state.matchedLocation == '/')) {
+        // Usa o UserProvider para verificar o tipo de usuário
+        if (userProvider.isDoctor) {
+          return AppRoutes.doctorHome;
+        } else if (userProvider.isPatient) {
+          return AppRoutes.patientHome;
         }
-        // Senão, redireciona para login
-        return const LoginPage();
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.login,
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.signUp,
-      builder: (context, state) => const SignPage(),
-    ),
-    // Deeplink route - redireciona para login
-    GoRoute(
-      path: AppRoutes.auth,
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.patientHome,
-      builder: (context, state) {
-        return PatientHomePage();
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.doctorHome,
-      builder: (context, state) {
-        final user = state.extra as UserModel;
-        return DoctorHomePage(user: user);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.testeMemoria,
-      builder: (context, state) => const TesteMemoriaPage(),
-    ),
-    GoRoute(path: AppRoutes.tmtA, builder: (context, state) => TmtA()),
-    GoRoute(
-      path: AppRoutes.stroopTest,
-      builder: (context, state) => const StroopTestPage(),
-    ),
-    GoRoute(path: AppRoutes.tmtB, builder: (context, state) => TmtB()),
-    GoRoute(
-      path: AppRoutes.resultadoTeste,
-      builder: (context, state) {
-        final args = state.extra as ResultadoTesteArgs;
-        return ResultadoTestePage(
-          pontuacao: args.pontuacao,
-          tempoMedioMs: args.tempoMedioMs,
-        );
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.lineChart,
-      builder: (context, state) => const DashboardScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.accountSettings,
-      builder: (context, state) {
-        return const AccountSettingsPage();
-      },
-    ),
+      }
 
-    GoRoute(
-      path: AppRoutes.editAccount,
-      builder: (context, state) => const EditAccountPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.changePassword,
-      builder: (context, state) => const ChangePasswordPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.patientsList,
-      builder: (context, state) {
-        final doctorId = state.extra as String;
-        return PatientsListPage(doctorId: doctorId);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.addPatient,
-      builder: (context, state) {
-        final doctorId = state.extra as String;
-        return AddPatientPage(doctorId: doctorId);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.confirmPatientAccess,
-      builder: (context, state) {
-        final token = state.uri.queryParameters['token'] ?? '';
-        return ConfirmPatientAccessPage(token: token);
-      },
-    ),
-  ],
-  errorBuilder:
-      (context, state) => Scaffold(
-        appBar: AppBar(title: const Text('Erro')),
-        body: Center(child: Text(state.error.toString())),
+      return null;
+    },
+    routes: [
+      // Rota raiz para capturar deep links com token
+      GoRoute(
+        path: '/',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          final session = Supabase.instance.client.auth.currentSession;
+          if (token != null && token.isNotEmpty) {
+            // Se tem token, vai para confirmação
+            return ConfirmPatientAccessPage(token: token);
+          }
+
+          // Mostra loading enquanto o UserProvider está carregando
+          final userProvider = Provider.of<UserProvider>(context);
+
+          // Senão, redireciona para login
+          if (session == null) {
+            return const LoginPage();
+          }
+
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        },
       ),
-);
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.signUp,
+        builder: (context, state) => const SignPage(),
+      ),
+      // Deeplink route - redireciona para login
+      GoRoute(
+        path: AppRoutes.auth,
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.patientHome,
+        builder: (context, state) {
+          return PatientHomePage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.doctorHome,
+        builder: (context, state) {
+          final user = state.extra as UserModel;
+          return DoctorHomePage(user: user);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.testeMemoria,
+        builder: (context, state) => const TesteMemoriaPage(),
+      ),
+      GoRoute(path: AppRoutes.tmtA, builder: (context, state) => TmtA()),
+      GoRoute(
+        path: AppRoutes.stroopTest,
+        builder: (context, state) => const StroopTestPage(),
+      ),
+      GoRoute(path: AppRoutes.tmtB, builder: (context, state) => TmtB()),
+      GoRoute(
+        path: AppRoutes.resultadoTeste,
+        builder: (context, state) {
+          final args = state.extra as ResultadoTesteArgs;
+          return ResultadoTestePage(
+            pontuacao: args.pontuacao,
+            tempoMedioMs: args.tempoMedioMs,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.lineChart,
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.accountSettings,
+        builder: (context, state) {
+          return const AccountSettingsPage();
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.editAccount,
+        builder: (context, state) => const EditAccountPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.changePassword,
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.patientsList,
+        builder: (context, state) {
+          final doctorId = state.extra as String;
+          return PatientsListPage(doctorId: doctorId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.addPatient,
+        builder: (context, state) {
+          final doctorId = state.extra as String;
+          return AddPatientPage(doctorId: doctorId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.confirmPatientAccess,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ConfirmPatientAccessPage(token: token);
+        },
+      ),
+    ],
+    errorBuilder:
+        (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Erro')),
+          body: Center(child: Text(state.error.toString())),
+        ),
+  );
+}
