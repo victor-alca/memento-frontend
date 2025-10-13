@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
+import 'package:test_app/features/auth/service/auth_service.dart';
+import 'package:test_app/app/provider/supabase_provider.dart';
+import 'package:test_app/features/auth/models/user_model.dart';
 
 // Classe para armazenar dados do botão
 class ButtonInfoB {
@@ -41,12 +44,14 @@ class _TmtBState extends State<TmtB> {
     '6', 'F', '7', 'G', '8', 'H', '9', 'I', '10', 'J'
   ];
 
+  late final AuthService authService;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateButtons(context);
     });
+    authService = AuthService(supabase.client);
   }
 
   void _generateButtons(BuildContext context) {
@@ -129,11 +134,47 @@ class _TmtBState extends State<TmtB> {
             DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
       }
 
-      await supabase.from('resultados_tmt').insert({
-        'pontuacao': pontuacao,
-        'tempo_total': tempoTotal,
-        'data': DateTime.now().toIso8601String(),
-      });
+      final User? user = supabase.auth.currentUser;
+      debugPrint(user?.id);
+      if (user != null) {
+      UserModel _role = await authService.getUserData(user.id);
+      if(_role.isPatient){
+      // Busca o id do paciente associado ao user.id
+      final patient = await supabase
+      .from('patients')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+      final patientId = patient?['id'];
+        await supabase.from('patient_tests').insert({
+          'patient_id': patientId,
+          'test_id': 2,
+          'score': pontuacao,
+          'average_time': null,
+          'time_spent': tempoTotal,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': null,
+        });
+      } else if(_role.isDoctor){
+        // Busca o id do medico associado ao user.id
+        final doctor = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        final doctorId = doctor?['id'];
+        await supabase.from('patient_tests').insert({
+          // no futuro deve ser colocado o id do paciente associado ao medico
+          'patient_id': null,
+          'test_id': 2,
+          'score': pontuacao,
+          'average_time': null,
+          'time_spent': tempoTotal,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': doctorId,
+        });
+      }
+      }
 
         Future.delayed(Duration.zero, () {
         context.go(
