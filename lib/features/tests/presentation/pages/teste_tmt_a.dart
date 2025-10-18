@@ -36,7 +36,7 @@ class _TmtAState extends State<TmtA> {
   int lastNumber = 0;
   int erros = 0;
 
-  List<ButtonInfo> _buttonInfos = [];
+  final List<ButtonInfo> _buttonInfos = [];
   DateTime? _startTime;
 
   late final AuthService authService;
@@ -49,57 +49,55 @@ class _TmtAState extends State<TmtA> {
     });
     authService = AuthService(supabase.client);
   }
+void _generateButtons(BuildContext context) {
+  final screenSize = MediaQuery.of(context).size;
+  final safeArea = MediaQuery.of(context).padding;
+  const double buttonSize = 40;
+  const double padding = 8;
 
-  void _generateButtons(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final double buttonSize = 40;
-    final double safeTop = kToolbarHeight + 20; // evita appbar e contador
-    final double padding = 5; // margem entre botões
-    final double restartBtnWidth = 56;
-    final double restartBtnHeight = 56;
+  // Áreas seguras corrigidas (sem somar kToolbarHeight e margens extras)
+  final double safeTop = safeArea.top + padding;
+  final double safeBottom = safeArea.bottom + padding;
 
-    lastNumber = 0;
-    erros = 0;
-    _buttonInfos.clear();
+  _buttonInfos.clear();
 
-    for (int number = 1; number <= 20; number++) {
-      double left, top;
-      bool overlap;
+  for (int number = 1; number <= 20; number++) {
+    double left, top;
+    bool overlap;
 
-      // tenta achar posição válida
-      do {
-        overlap = false;
+    do {
+      overlap = false;
 
-        left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top = safeTop +
-            _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
+      left = padding +
+          _random.nextDouble() *
+              (screenSize.width - buttonSize - padding * 2);
 
-        // verifica colisão com outros botões
-        for (var other in _buttonInfos) {
-          if ((left - other.left).abs() < buttonSize + padding &&
-              (top - other.top).abs() < buttonSize + padding) {
-            overlap = true;
-            break;
-          }
-        }
+      top = safeTop +
+          _random.nextDouble() *
+              (screenSize.height - safeTop - safeBottom - buttonSize);
 
-        // evita sobreposição com o botão de reiniciar
-        if (left > screenSize.width - restartBtnWidth - 10 &&
-            top < safeTop + restartBtnHeight + 10) {
+      left = left.clamp(0, screenSize.width - buttonSize);
+      top = top.clamp(0, screenSize.height - buttonSize);
+
+      for (var other in _buttonInfos) {
+        if ((left - other.left).abs() < buttonSize + padding &&
+            (top - other.top).abs() < buttonSize + padding) {
           overlap = true;
+          break;
         }
+      }
+    } while (overlap);
 
-      } while (overlap);
-
-      _buttonInfos.add(ButtonInfo(
-        number: number,
-        left: left,
-        top: top,
-      ));
-    }
-
-    setState(() {});
+    _buttonInfos.add(ButtonInfo(
+      number: number,
+      left: left,
+      top: top,
+    ));
   }
+
+  setState(() {});
+}
+
 
   void _disableButton(int number) {
     setState(() {
@@ -137,8 +135,8 @@ class _TmtAState extends State<TmtA> {
       final User? user = supabase.auth.currentUser;
       debugPrint(user?.id);
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
-      if(_role.isPatient){
+      UserModel role = await authService.getUserData(user.id);
+      if(role.isPatient){
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
       .from('patients')
@@ -155,7 +153,7 @@ class _TmtAState extends State<TmtA> {
           'test_date': DateTime.now().toIso8601String(),
           'doctor_id': null,
         });
-      } else if(_role.isDoctor){
+      } else if(role.isDoctor){
         // Busca o id do medico associado ao user.id
         final doctor = await supabase
         .from('doctors')
@@ -256,7 +254,7 @@ class _TmtAState extends State<TmtA> {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

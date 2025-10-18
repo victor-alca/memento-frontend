@@ -330,8 +330,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
     final User? user = supabase.auth.currentUser;
       debugPrint(user?.id);
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
-      if(_role.isPatient){
+      UserModel role = await authService.getUserData(user.id);
+      if(role.isPatient){
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
       .from('patients')
@@ -348,7 +348,7 @@ class _StroopTestPageState extends State<StroopTestPage> {
           'test_date': DateTime.now().toIso8601String(),
           'doctor_id': null,
         });
-      } else if(_role.isDoctor){
+      } else if(role.isDoctor){
         // Busca o id do medico associado ao user.id
         final doctor = await supabase
         .from('doctors')

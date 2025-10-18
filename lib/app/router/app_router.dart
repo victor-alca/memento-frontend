@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
-import 'package:test_app/core/widgets/auth_wrapper.dart';
 import 'package:test_app/features/account/presentation/pages/account_settings_page.dart';
 import 'package:test_app/features/account/presentation/pages/change_password_page.dart';
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
@@ -13,7 +12,6 @@ import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
-import 'package:test_app/features/tests/presentation/pages/teste_tmt_a.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {

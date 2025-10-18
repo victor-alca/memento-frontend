@@ -134,8 +134,9 @@ class UserProvider with ChangeNotifier {
       final updates = <String, dynamic>{};
 
       if (name != null) updates['name'] = name;
-      if (birthDate != null)
+      if (birthDate != null) {
         updates['birth_date'] = birthDate.toIso8601String();
+      }
       if (additionalData != null) updates.addAll(additionalData);
 
       if (updates.isNotEmpty) {

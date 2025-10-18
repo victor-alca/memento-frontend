@@ -76,7 +76,7 @@ class CrmFormatter extends TextInputFormatter {
       if (estado.length < 2 && numeros.isNotEmpty) {
         // Se começou a digitar números mas não tem estado completo,
         // não formatar ainda
-        formatted = '$crm/${estado}$numeros';
+        formatted = '$crm/$estado$numeros';
       } else {
         formatted = numeros.isEmpty ? '$crm/$estado' : '$crm/$estado $numeros';
       }

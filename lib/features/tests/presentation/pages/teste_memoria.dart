@@ -107,9 +107,9 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       debugPrint(user?.id);
       
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
+      UserModel role = await authService.getUserData(user.id);
       
-      if(_role.isPatient){
+      if(role.isPatient){
 
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
@@ -130,7 +130,7 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
           'doctor_id': null,
         });
 
-      } else if(_role.isDoctor){
+      } else if(role.isDoctor){
 
         // Busca o id do medico associado ao user.id
         final doctor = await supabase
