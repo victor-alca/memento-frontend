@@ -6,17 +6,23 @@ class ResultadoTestePage extends StatelessWidget {
   final int pontuacao;
   final double tempoMedioMs;
   final double tempoTotalMs;
+  final int? patientId;
+  final String? doctorId;
 
   const ResultadoTestePage({
     super.key,
     required this.pontuacao,
     required this.tempoMedioMs,
+    this.patientId,
+    this.doctorId,
   }) : tempoTotalMs = 0.0;
 
   const ResultadoTestePage.tmt({
     super.key,
     required this.pontuacao,
     required this.tempoTotalMs,
+    this.patientId,
+    this.doctorId,
   }) : tempoMedioMs = 0.0;
 
   @override
@@ -167,13 +173,18 @@ class ResultadoTestePage extends StatelessWidget {
   //            BUTTON
   // ----------------------------
   Widget _buildBottomButton(BuildContext context) {
+    // Se o médico está realizando o teste para o paciente, volta para a lista de pacientes
+    final bool isDoctorContext = patientId != null && doctorId != null;
+    
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () => context.go(AppRoutes.patientHome),
+          onPressed: () => context.go(
+            isDoctorContext ? AppRoutes.patientsList : AppRoutes.patientHome,
+          ),
           icon: const Icon(Icons.arrow_back),
           label: const Text('Voltar'),
           style: ElevatedButton.styleFrom(

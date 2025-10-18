@@ -16,6 +16,15 @@ class AppRoutes {
   static const confirmPatientAccess = '/confirm';
 
   static const lineChart = '/line_chart';
+  
+  // Doctor routes for patient tests
+  static const doctorPatientTests = '/doctor/patient-tests';
+  static const doctorPatientMemoryTest = '/doctor/patient/teste-memoria';
+  static const doctorPatientTmtA = '/doctor/patient/teste-tmt-a';
+  static const doctorPatientTmtB = '/doctor/patient/teste-tmt-b';
+  static const doctorPatientStroopTest = '/doctor/patient/stroop-test';
+  static const doctorPatientHistory = '/doctor/patient/history';
+  
   // Deeplink routes
   static const auth = '/auth';
 }

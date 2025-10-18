@@ -4,7 +4,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final int? patientId;
+  final String? patientName;
+
+  const DashboardScreen({
+    super.key,
+    this.patientId,
+    this.patientName,
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -45,19 +52,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDoctorViewing = widget.patientId != null && widget.patientName != null;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Olá!',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        title: isDoctorViewing
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Histórico do Paciente',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    widget.patientName!,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+              )
+            : const Text(
+                'Olá!',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline, color: Colors.black),
@@ -102,7 +133,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               padding: const EdgeInsets.only(top: 20, bottom: 20),
               child: TextButton(
                 onPressed: () {
-                  context.go('/patient-home'); // Replace with your actual route
+                  // Se o médico está vendo o histórico do paciente, volta para a lista de pacientes
+                  final bool isDoctorViewing = widget.patientId != null && widget.patientName != null;
+                  context.go(isDoctorViewing ? '/patients' : '/patient-home');
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

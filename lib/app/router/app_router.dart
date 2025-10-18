@@ -156,6 +156,8 @@ GoRouter createAppRouter(BuildContext context) {
           return ResultadoTestePage(
             pontuacao: args.pontuacao,
             tempoMedioMs: args.tempoMedioMs,
+            patientId: args.patientId,
+            doctorId: args.doctorId,
           );
         },
       ),
@@ -197,6 +199,47 @@ GoRouter createAppRouter(BuildContext context) {
         builder: (context, state) {
           final token = state.uri.queryParameters['token'] ?? '';
           return ConfirmPatientAccessPage(token: token);
+        },
+      ),
+      // Doctor routes for patient tests
+      GoRoute(
+        path: AppRoutes.doctorPatientHistory,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return DashboardScreen(
+            patientId: args['patientId'] as int,
+            patientName: args['patientName'] as String,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.doctorPatientMemoryTest,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return TesteMemoriaPage(
+            patientId: args['patientId'] as int,
+            doctorId: args['doctorId'] as String,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.doctorPatientTmtA,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return TmtA(
+            patientId: args['patientId'] as int,
+            doctorId: args['doctorId'] as String,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.doctorPatientStroopTest,
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return StroopTestPage(
+            patientId: args['patientId'] as int,
+            doctorId: args['doctorId'] as String,
+          );
         },
       ),
     ],

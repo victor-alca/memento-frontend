@@ -25,7 +25,14 @@ class ButtonInfo {
 }
 
 class TmtA extends StatefulWidget {
-  const TmtA({super.key});
+  final int? patientId;
+  final String? doctorId;
+
+  const TmtA({
+    super.key,
+    this.patientId,
+    this.doctorId,
+  });
 
   @override
   _TmtAState createState() => _TmtAState();
@@ -134,7 +141,20 @@ class _TmtAState extends State<TmtA> {
       debugPrint(user?.id);
       if (user != null) {
       UserModel _role = await authService.getUserData(user.id);
-      if(_role.isPatient){
+      
+      // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
+      if (widget.patientId != null && widget.doctorId != null) {
+        await supabase.from('patient_tests').insert({
+          'patient_id': widget.patientId,
+          'test_id': 2,
+          'score': pontuacao,
+          'average_time': null,
+          'time_spent': tempoTotal,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': widget.doctorId,
+        });
+      }
+      else if(_role.isPatient){
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
       .from('patients')
@@ -178,6 +198,8 @@ class _TmtAState extends State<TmtA> {
           extra: ResultadoTesteArgs.tmt(
             pontuacao: pontuacao,
             tempoTotalMs: tempoTotal,
+            patientId: widget.patientId,
+            doctorId: widget.doctorId,
           ),
         );
       });
