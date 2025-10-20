@@ -11,7 +11,14 @@ import 'package:test_app/app/provider/supabase_provider.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
 
 class StroopTestPage extends StatefulWidget {
-  const StroopTestPage({super.key});
+  final int? patientId;
+  final String? doctorId;
+
+  const StroopTestPage({
+    super.key,
+    this.patientId,
+    this.doctorId,
+  });
 
   @override
   State<StroopTestPage> createState() => _StroopTestPageState();
@@ -149,6 +156,12 @@ class _StroopTestPageState extends State<StroopTestPage> {
   }
   
   void _gerarProximoItem() {
+    // Verifica se ainda há itens para mostrar
+    if (indiceAtual >= totalItens) {
+      _finalizarTeste();
+      return;
+    }
+
     final random = Random();
     
     // Seleciona uma palavra aleatória
@@ -331,7 +344,20 @@ class _StroopTestPageState extends State<StroopTestPage> {
       debugPrint(user?.id);
       if (user != null) {
       UserModel _role = await authService.getUserData(user.id);
-      if(_role.isPatient){
+      
+      // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
+      if (widget.patientId != null && widget.doctorId != null) {
+        await supabase.from('patient_tests').insert({
+          'patient_id': widget.patientId,
+          'test_id': 1,
+          'score': pontuacao,
+          'average_time': tempoMedio,
+          'time_spent': somaTempos,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': widget.doctorId,
+        });
+      }
+      else if(_role.isPatient){
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
       .from('patients')
@@ -376,6 +402,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
         extra: ResultadoTesteArgs(
           pontuacao: pontuacao,
           tempoMedioMs: tempoMedio,
+          patientId: widget.patientId,
+          doctorId: widget.doctorId,
         ),
       );
     }

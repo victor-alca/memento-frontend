@@ -11,7 +11,14 @@ import 'package:test_app/app/provider/supabase_provider.dart';
 
 
 class TesteMemoriaPage extends StatefulWidget {
-  const TesteMemoriaPage({super.key});
+  final int? patientId;
+  final String? doctorId;
+
+  const TesteMemoriaPage({
+    super.key,
+    this.patientId,
+    this.doctorId,
+  });
 
   @override
   State<TesteMemoriaPage> createState() => _TesteMemoriaPageState();
@@ -72,6 +79,10 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
   }
 
   void responder(bool visto) async {
+    // Verifica se ainda há palavras para mostrar
+    if (indiceAtual >= sequenciaPalavras.length) {
+      return;
+    }
 
     final tempoResposta = DateTime.now().difference(tempoInicio);
     temposDeResposta.add(tempoResposta);
@@ -109,7 +120,19 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       if (user != null) {
       UserModel _role = await authService.getUserData(user.id);
       
-      if(_role.isPatient){
+      // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
+      if (widget.patientId != null && widget.doctorId != null) {
+        await supabase.from('patient_tests').insert({
+          'patient_id': widget.patientId,
+          'test_id': 3,
+          'score': pontuacao,
+          'average_time': tempoMedio,
+          'time_spent': somaTempos.inMilliseconds,
+          'test_date': DateTime.now().toIso8601String(),
+          'doctor_id': widget.doctorId,
+        });
+      }
+      else if(_role.isPatient){
 
       // Busca o id do paciente associado ao user.id
       final patient = await supabase
@@ -159,6 +182,8 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
           extra: ResultadoTesteArgs(
             pontuacao: pontuacao,
             tempoMedioMs: tempoMedio,
+            patientId: widget.patientId,
+            doctorId: widget.doctorId,
           ),
         );
       });

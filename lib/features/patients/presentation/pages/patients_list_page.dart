@@ -7,6 +7,7 @@ import 'package:test_app/features/patients/models/patient_model.dart';
 import 'package:test_app/features/patients/service/patient_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/features/patients/presentation/widgets/patient_options_dialog.dart';
 
 class PatientsListPage extends StatefulWidget {
   final String doctorId;
@@ -186,63 +187,78 @@ class _PatientsListPageState extends State<PatientsListPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
-                  child: Text(
-                    patient.name.isNotEmpty 
-                        ? patient.name[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: patient.isConfirmed
+            ? () {
+                showDialog(
+                  context: context,
+                  builder: (context) => PatientOptionsDialog(
+                    patientId: patient.id,
+                    patientName: patient.name,
+                    doctorId: widget.doctorId,
+                  ),
+                );
+              }
+            : null,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    child: Text(
+                      patient.name.isNotEmpty 
+                          ? patient.name[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        patient.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        patient.email,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      if (patient.birthDate != null)
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          'Nascimento: ${_formatDate(patient.birthDate!)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
+                          patient.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                    ],
+                        Text(
+                          patient.email,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        if (patient.birthDate != null)
+                          Text(
+                            'Nascimento: ${_formatDate(patient.birthDate!)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                _buildStatusChip(patient.isConfirmed),
+                  _buildStatusChip(patient.isConfirmed),
+                ],
+              ),
+              if (!patient.isConfirmed) ...[
+                const SizedBox(height: AppSpacing.sm),
+                _buildPendingConfirmationWidget(patient),
               ],
-            ),
-            if (!patient.isConfirmed) ...[
-              const SizedBox(height: AppSpacing.sm),
-              _buildPendingConfirmationWidget(patient),
             ],
-          ],
+          ),
         ),
       ),
     );
