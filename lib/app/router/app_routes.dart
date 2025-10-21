@@ -1,6 +1,7 @@
 class AppRoutes {
   static const login = '/login';
   static const signUp = '/sign-up';
+  static const forgotPassword = '/forgot-password';
   static const patientHome = '/patient-home';
   static const doctorHome = '/doctor-home';
   static const testeMemoria = '/teste-memoria';

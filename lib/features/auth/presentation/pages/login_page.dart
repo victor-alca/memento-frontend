@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // TODO: implement password reset flow if desired
+                      context.push(AppRoutes.forgotPassword);
                     },
                     child: const Text(
                       'Esqueceu sua senha?',

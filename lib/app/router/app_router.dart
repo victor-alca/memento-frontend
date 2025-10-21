@@ -16,6 +16,7 @@ import 'package:test_app/features/patients/presentation/pages/add_patient_page.d
 import 'package:test_app/features/patients/presentation/pages/confirm_patient_access_page.dart';
 import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/tests/presentation/pages/index.dart';
 import 'package:test_app/features/tests/presentation/pages/line_chart.dart';
 
@@ -48,6 +49,7 @@ GoRouter createAppRouter(BuildContext context) {
       final session = Supabase.instance.client.auth.currentSession;
       final loggingIn = state.matchedLocation == AppRoutes.login;
       final signingUp = state.matchedLocation == AppRoutes.signUp;
+      final forgotPassword = state.matchedLocation == AppRoutes.forgotPassword;
       final isAuthRoute = state.matchedLocation == AppRoutes.auth;
       final isConfirmRoute =
           state.matchedLocation == AppRoutes.confirmPatientAccess;
@@ -57,6 +59,7 @@ GoRouter createAppRouter(BuildContext context) {
       final isPublicPage =
           loggingIn ||
           signingUp ||
+          forgotPassword ||
           isAuthRoute ||
           isConfirmRoute ||
           isRootWithToken;
@@ -120,6 +123,10 @@ GoRouter createAppRouter(BuildContext context) {
       GoRoute(
         path: AppRoutes.signUp,
         builder: (context, state) => const SignPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
       // Deeplink route - redireciona para login
       GoRoute(
