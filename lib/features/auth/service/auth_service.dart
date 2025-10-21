@@ -71,6 +71,21 @@ class AuthService {
     }
   }
 
+  Future<void> resetPassword(String email) async {
+    try {
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.memento://reset-password',
+      );
+    } on AuthException catch (e) {
+      throw Exception('Erro ao enviar email: ${e.message}');
+    } on SocketException {
+      throw Exception('Erro de conexão. Verifique sua internet.');
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
   /// Busca dados completos do usuário após login
   Future<UserModel> getUserData(String userId) async {
     try {
