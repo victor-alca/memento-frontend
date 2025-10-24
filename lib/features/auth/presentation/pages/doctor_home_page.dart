@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 
 class DoctorHomePage extends StatefulWidget {
-  final UserModel user;
-
-  const DoctorHomePage({
-    super.key,
-    required this.user,
-  });
+  const DoctorHomePage({super.key});
 
   @override
   State<DoctorHomePage> createState() => _DoctorHomePageState();
@@ -34,26 +31,28 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao sair: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao sair: $e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Dr. ${widget.user.name}'),
-            if (widget.user.crm != null)
-              // CRM  
+            Text('Dr. ${user?.name}'),
+            if (user?.crm != null)
+              // CRM
               Text(
-                '${widget.user.crm}',
+                '${user?.crm}',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
@@ -72,10 +71,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
               // TODO: Navegar para perfil
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
         ],
       ),
       body: SafeArea(
@@ -87,18 +83,12 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
               const SizedBox(height: 20),
               const Text(
                 'Painel Médico',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Gerencie seus pacientes e acompanhe resultados',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 40),
 
@@ -116,7 +106,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                       color: Colors.blue.shade100,
                       iconColor: Colors.blue.shade700,
                       onTap: () {
-                        context.push(AppRoutes.patientsList, extra: widget.user.id);
+                        context.push(AppRoutes.patientsList, extra: user?.id);
                       },
                     ),
                   ],
@@ -177,19 +167,12 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 40,
-              color: iconColor,
-            ),
+            Icon(icon, size: 40, color: iconColor),
             const SizedBox(height: 12),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -208,13 +191,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
             color: Colors.blue,
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }
