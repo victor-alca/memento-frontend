@@ -82,6 +82,7 @@ GoRouter createAppRouter(BuildContext context) {
               state.matchedLocation == AppRoutes.signUp ||
               state.matchedLocation == '/')) {
         // Usa o UserProvider para verificar o tipo de usuário
+        print(userProvider.user);
         if (userProvider.isDoctor) {
           return AppRoutes.doctorHome;
         } else if (userProvider.isPatient) {
@@ -142,8 +143,7 @@ GoRouter createAppRouter(BuildContext context) {
       GoRoute(
         path: AppRoutes.doctorHome,
         builder: (context, state) {
-          final user = state.extra as UserModel;
-          return DoctorHomePage(user: user);
+          return DoctorHomePage();
         },
       ),
       GoRoute(
