@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:test_app/app/router/app_routes.dart';
 
 class ResultadoTestePage extends StatelessWidget {
   final int pontuacao;
@@ -11,7 +13,7 @@ class ResultadoTestePage extends StatelessWidget {
     required this.tempoMedioMs,
   }) : tempoTotalMs = 0.0;
 
-    const ResultadoTestePage.tmt({
+  const ResultadoTestePage.tmt({
     super.key,
     required this.pontuacao,
     required this.tempoTotalMs,
@@ -171,12 +173,7 @@ class ResultadoTestePage extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const TelaAnterior()),
-            );
-          },
+          onPressed: () => context.go(AppRoutes.patientHome),
           icon: const Icon(Icons.arrow_back),
           label: const Text('Voltar'),
           style: ElevatedButton.styleFrom(

@@ -62,7 +62,15 @@ void _generateButtons(BuildContext context) {
   final double usableHeight =
       screenSize.height - appBarHeight - safeArea.top - safeArea.bottom;
 
+<<<<<<< HEAD
   _buttonInfos.clear();
+=======
+        left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
+        top =
+            safeTop +
+            _random.nextDouble() *
+                (screenSize.height - safeTop - buttonSize - padding);
+>>>>>>> 589bd3bac00c53d13533fbce5719fb21ed992b12
 
   for (int number = 1; number <= 20; number++) {
     double left, top;
@@ -85,6 +93,7 @@ void _generateButtons(BuildContext context) {
           overlap = true;
           break;
         }
+<<<<<<< HEAD
       }
     } while (overlap);
 
@@ -93,6 +102,14 @@ void _generateButtons(BuildContext context) {
       left: left,
       top: top,
     ));
+=======
+      } while (overlap);
+
+      _buttonInfos.add(ButtonInfo(number: number, left: left, top: top));
+    }
+
+    setState(() {});
+>>>>>>> 589bd3bac00c53d13533fbce5719fb21ed992b12
   }
 
   setState(() {});
@@ -129,9 +146,8 @@ void _generateButtons(BuildContext context) {
 
       double tempoTotal = 0.0;
       if (_startTime != null) {
-        tempoTotal = DateTime.now()
-            .difference(_startTime!)
-            .inMilliseconds / 1.0;
+        tempoTotal =
+            DateTime.now().difference(_startTime!).inMilliseconds / 1.0;
       }
 
       final User? user = supabase.auth.currentUser;
@@ -176,7 +192,6 @@ void _generateButtons(BuildContext context) {
       }
       }
 
-      
       Future.delayed(Duration.zero, () {
         context.go(
           AppRoutes.resultadoTeste,
@@ -192,7 +207,6 @@ void _generateButtons(BuildContext context) {
       debugPrint("Erro ao salvar resultado: $e");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +233,7 @@ void _generateButtons(BuildContext context) {
             ),
           ),
 
-          // botão de reiniciar 
+          // botão de reiniciar
           Positioned(
             top: 10,
             right: 10,
@@ -246,11 +260,12 @@ void _generateButtons(BuildContext context) {
                       shape: CircleBorder(),
                       backgroundColor: btn.disabled ? Colors.grey : null,
                     ),
-                    onPressed: btn.disabled
-                        ? null
-                        : () {
-                            _disableButton(btn.number);
-                          },
+                    onPressed:
+                        btn.disabled
+                            ? null
+                            : () {
+                              _disableButton(btn.number);
+                            },
                     child: Text('${btn.number}'),
                   ),
                 ),

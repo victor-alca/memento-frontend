@@ -12,6 +12,10 @@ import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/tests/presentation/pages/teste_tmt_b.dart';
 import '../../features/auth/presentation/pages/index.dart';
 import '../../features/tests/presentation/pages/index.dart';
+<<<<<<< HEAD
+=======
+import 'package:test_app/features/tests/presentation/pages/line_chart.dart';
+>>>>>>> 589bd3bac00c53d13533fbce5719fb21ed992b12
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
@@ -86,10 +90,7 @@ final appRouter = GoRouter(
       path: AppRoutes.stroopTest,
       builder: (context, state) => const StroopTestPage(),
     ),
-    GoRoute(
-      path: AppRoutes.tmtB,
-      builder: (context, state) => TmtB(),
-    ),
+    GoRoute(path: AppRoutes.tmtB, builder: (context, state) => TmtB()),
     GoRoute(
       path: AppRoutes.resultadoTeste,
       builder: (context, state) {
@@ -99,6 +100,10 @@ final appRouter = GoRouter(
           tempoMedioMs: args.tempoMedioMs,
         );
       },
+    ),
+    GoRoute(
+      path: AppRoutes.lineChart,
+      builder: (context, state) => const DashboardScreen(),
     ),
     GoRoute(
       path: AppRoutes.accountSettings,
