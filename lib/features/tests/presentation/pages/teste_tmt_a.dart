@@ -49,15 +49,18 @@ class _TmtAState extends State<TmtA> {
     });
     authService = AuthService(supabase.client);
   }
+
+
 void _generateButtons(BuildContext context) {
   final screenSize = MediaQuery.of(context).size;
   final safeArea = MediaQuery.of(context).padding;
   const double buttonSize = 40;
   const double padding = 8;
 
-  // Áreas seguras corrigidas (sem somar kToolbarHeight e margens extras)
-  final double safeTop = safeArea.top + padding;
-  final double safeBottom = safeArea.bottom + padding;
+  final appBarHeight = kToolbarHeight; // Altura padrão da AppBar
+
+  final double usableHeight =
+      screenSize.height - appBarHeight - safeArea.top - safeArea.bottom;
 
   _buttonInfos.clear();
 
@@ -72,12 +75,9 @@ void _generateButtons(BuildContext context) {
           _random.nextDouble() *
               (screenSize.width - buttonSize - padding * 2);
 
-      top = safeTop +
+      top = padding +
           _random.nextDouble() *
-              (screenSize.height - safeTop - safeBottom - buttonSize);
-
-      left = left.clamp(0, screenSize.width - buttonSize);
-      top = top.clamp(0, screenSize.height - buttonSize);
+              (usableHeight - buttonSize - padding * 2) + 40;
 
       for (var other in _buttonInfos) {
         if ((left - other.left).abs() < buttonSize + padding &&
@@ -99,6 +99,8 @@ void _generateButtons(BuildContext context) {
 }
 
 
+
+
   void _disableButton(int number) {
     setState(() {
       final btn = _buttonInfos.firstWhere((b) => b.number == number);
@@ -111,7 +113,7 @@ void _generateButtons(BuildContext context) {
           _startTime = DateTime.now();
         }
 
-        if (btn.number == 5) {
+        if (btn.number == 20) {
           _salvarResultado();
         }
       } else {

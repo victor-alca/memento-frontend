@@ -55,10 +55,11 @@ class _TmtBState extends State<TmtB> {
   }
 
   void _generateButtons(BuildContext context) {
+    final safeArea = MediaQuery.of(context).padding;
     final screenSize = MediaQuery.of(context).size;
     const double buttonSize = 40;
     final double safeTop = kToolbarHeight + 20;
-    const double padding = 5;
+    const double padding = 8;
     const double restartBtnWidth = 56;
     const double restartBtnHeight = 56;
 
@@ -70,12 +71,21 @@ class _TmtBState extends State<TmtB> {
       double left, top;
       bool overlap;
 
+      final appBarHeight = kToolbarHeight; // Altura padrão da AppBar
+
+      final double usableHeight =
+      screenSize.height - appBarHeight - safeArea.top - safeArea.bottom;
+
       // tenta achar posição válida
       do {
         overlap = false;
-        left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top = safeTop +
-            _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
+              left = padding +
+          _random.nextDouble() *
+              (screenSize.width - buttonSize - padding * 2);
+
+      top = padding +
+          _random.nextDouble() *
+              (usableHeight - buttonSize - padding * 2) + 40;
 
         for (var other in _buttonInfos) {
           if ((left - other.left).abs() < buttonSize + padding &&
