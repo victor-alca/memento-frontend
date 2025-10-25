@@ -58,52 +58,65 @@ class _TmtAState extends State<TmtA> {
   }
 
   void _generateButtons(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final double buttonSize = 40;
-    final double safeTop = kToolbarHeight + 20; // evita appbar e contador
-    final double padding = 5; // margem entre botões
-    final double restartBtnWidth = 56;
-    final double restartBtnHeight = 56;
+  final screenSize = MediaQuery.of(context).size;
+  final safeArea = MediaQuery.of(context).padding;
+  const double buttonSize = 40;
+  const double padding = 8;
 
-    lastNumber = 0;
-    erros = 0;
-    _buttonInfos.clear();
 
-    for (int number = 1; number <= 20; number++) {
-      double left, top;
-      bool overlap;
+  final appBarHeight = kToolbarHeight;
 
-      // tenta achar posição válida
-      do {
-        overlap = false;
 
-        left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top =
-            safeTop +
-            _random.nextDouble() *
-                (screenSize.height - safeTop - buttonSize - padding);
+  // Altura realmente utilizável (sem AppBar, SafeAreas, nem área superior extra)
+  final double usableHeight = screenSize.height
+      - appBarHeight
+      - safeArea.top
+      - safeArea.bottom
+      - 40;
 
-        // verifica colisão com outros botões
-        for (var other in _buttonInfos) {
-          if ((left - other.left).abs() < buttonSize + padding &&
-              (top - other.top).abs() < buttonSize + padding) {
-            overlap = true;
-            break;
-          }
-        }
 
-        // evita sobreposição com o botão de reiniciar
-        if (left > screenSize.width - restartBtnWidth - 10 &&
-            top < safeTop + restartBtnHeight + 10) {
+  _buttonInfos.clear();
+
+
+  for (int number = 1; number <= 20; number++) {
+    double left, top;
+    bool overlap;
+
+
+    do {
+      overlap = false;
+
+
+      left = padding +
+          _random.nextDouble() *
+              (screenSize.width - buttonSize - padding * 2);
+
+
+      top = padding +
+          _random.nextDouble() *
+              (usableHeight - buttonSize - padding * 2) + 40;
+
+
+      for (var other in _buttonInfos) {
+        if ((left - other.left).abs() < buttonSize + padding &&
+            (top - other.top).abs() < buttonSize + padding) {
           overlap = true;
+          break;
         }
-      } while (overlap);
+      }
+    } while (overlap);
 
-      _buttonInfos.add(ButtonInfo(number: number, left: left, top: top));
-    }
 
-    setState(() {});
+    _buttonInfos.add(ButtonInfo(
+      number: number,
+      left: left,
+      top: top,
+    ));
   }
+
+
+  setState(() {});
+}
 
   void _disableButton(int number) {
     setState(() {
