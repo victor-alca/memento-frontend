@@ -54,28 +54,49 @@ class _TmtBState extends State<TmtB> {
     authService = AuthService(supabase.client);
   }
 
-  void _generateButtons(BuildContext context) {
+void _generateButtons(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     const double buttonSize = 40;
     final double safeTop = kToolbarHeight + 20;
     const double padding = 5;
     const double restartBtnWidth = 56;
+    final safeArea = MediaQuery.of(context).padding;
+
+
+    final appBarHeight = kToolbarHeight;
+
+
     const double restartBtnHeight = 56;
+      final double usableHeight = screenSize.height
+      - appBarHeight
+      - safeArea.top
+      - safeArea.bottom
+      - 40;
+
 
     currentIndex = 0;
     erros = 0;
     _buttonInfos.clear();
 
+
     for (var char in charList) {
       double left, top;
       bool overlap;
 
+
       // tenta achar posição válida
       do {
         overlap = false;
-        left = _random.nextDouble() * (screenSize.width - buttonSize - padding);
-        top = safeTop +
-            _random.nextDouble() * (screenSize.height - safeTop - buttonSize - padding);
+      left = padding +
+          _random.nextDouble() *
+              (screenSize.width - buttonSize - padding * 2);
+
+
+      top = padding +
+          _random.nextDouble() *
+              (usableHeight - buttonSize - padding * 2) +
+          40;
+
 
         for (var other in _buttonInfos) {
           if ((left - other.left).abs() < buttonSize + padding &&
@@ -85,11 +106,13 @@ class _TmtBState extends State<TmtB> {
           }
         }
 
+
         if (left > screenSize.width - restartBtnWidth - 10 &&
             top < safeTop + restartBtnHeight + 10) {
           overlap = true;
         }
       } while (overlap);
+
 
       _buttonInfos.add(ButtonInfoB(
         value: char,
@@ -98,8 +121,10 @@ class _TmtBState extends State<TmtB> {
       ));
     }
 
+
     setState(() {});
   }
+
 
   void _disableButton(String value) {
     setState(() {
