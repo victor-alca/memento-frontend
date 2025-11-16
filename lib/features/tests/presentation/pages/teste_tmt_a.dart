@@ -28,11 +28,7 @@ class TmtA extends StatefulWidget {
   final int? patientId;
   final String? doctorId;
 
-  const TmtA({
-    super.key,
-    this.patientId,
-    this.doctorId,
-  });
+  const TmtA({super.key, this.patientId, this.doctorId});
 
   @override
   _TmtAState createState() => _TmtAState();
@@ -58,65 +54,50 @@ class _TmtAState extends State<TmtA> {
   }
 
   void _generateButtons(BuildContext context) {
-  final screenSize = MediaQuery.of(context).size;
-  final safeArea = MediaQuery.of(context).padding;
-  const double buttonSize = 40;
-  const double padding = 8;
+    final screenSize = MediaQuery.of(context).size;
+    final safeArea = MediaQuery.of(context).padding;
+    const double buttonSize = 40;
+    const double padding = 8;
 
+    final appBarHeight = kToolbarHeight;
 
-  final appBarHeight = kToolbarHeight;
+    // Altura realmente utilizável (sem AppBar, SafeAreas, nem área superior extra)
+    final double usableHeight =
+        screenSize.height - appBarHeight - safeArea.top - safeArea.bottom - 40;
 
+    _buttonInfos.clear();
 
-  // Altura realmente utilizável (sem AppBar, SafeAreas, nem área superior extra)
-  final double usableHeight = screenSize.height
-      - appBarHeight
-      - safeArea.top
-      - safeArea.bottom
-      - 40;
+    for (int number = 1; number <= 20; number++) {
+      double left, top;
+      bool overlap;
 
+      do {
+        overlap = false;
 
-  _buttonInfos.clear();
+        left =
+            padding +
+            _random.nextDouble() *
+                (screenSize.width - buttonSize - padding * 2);
 
+        top =
+            padding +
+            _random.nextDouble() * (usableHeight - buttonSize - padding * 2) +
+            40;
 
-  for (int number = 1; number <= 20; number++) {
-    double left, top;
-    bool overlap;
-
-
-    do {
-      overlap = false;
-
-
-      left = padding +
-          _random.nextDouble() *
-              (screenSize.width - buttonSize - padding * 2);
-
-
-      top = padding +
-          _random.nextDouble() *
-              (usableHeight - buttonSize - padding * 2) + 40;
-
-
-      for (var other in _buttonInfos) {
-        if ((left - other.left).abs() < buttonSize + padding &&
-            (top - other.top).abs() < buttonSize + padding) {
-          overlap = true;
-          break;
+        for (var other in _buttonInfos) {
+          if ((left - other.left).abs() < buttonSize + padding &&
+              (top - other.top).abs() < buttonSize + padding) {
+            overlap = true;
+            break;
+          }
         }
-      }
-    } while (overlap);
+      } while (overlap);
 
+      _buttonInfos.add(ButtonInfo(number: number, left: left, top: top));
+    }
 
-    _buttonInfos.add(ButtonInfo(
-      number: number,
-      left: left,
-      top: top,
-    ));
+    setState(() {});
   }
-
-
-  setState(() {});
-}
 
   void _disableButton(int number) {
     setState(() {
@@ -153,56 +134,57 @@ class _TmtAState extends State<TmtA> {
       final User? user = supabase.auth.currentUser;
       debugPrint(user?.id);
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
-      
-      // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
-      if (widget.patientId != null && widget.doctorId != null) {
-        await supabase.from('patient_tests').insert({
-          'patient_id': widget.patientId,
-          'test_id': 2,
-          'score': pontuacao,
-          'average_time': null,
-          'time_spent': tempoTotal,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': widget.doctorId,
-        });
-      }
-      else if(_role.isPatient){
-      // Busca o id do paciente associado ao user.id
-      final patient = await supabase
-      .from('patients')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-      final patientId = patient?['id'];
-        await supabase.from('patient_tests').insert({
-          'patient_id': patientId,
-          'test_id': 2,
-          'score': pontuacao,
-          'average_time': null,
-          'time_spent': tempoTotal,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': null,
-        });
-      } else if(_role.isDoctor){
-        // Busca o id do medico associado ao user.id
-        final doctor = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-        final doctorId = doctor?['id'];
-        await supabase.from('patient_tests').insert({
-          // no futuro deve ser colocado o id do paciente associado ao medico
-          'patient_id': null,
-          'test_id': 2,
-          'score': pontuacao,
-          'average_time': null,
-          'time_spent': tempoTotal,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': doctorId,
-        });
-      }
+        UserModel _role = await authService.getUserData(user.id);
+
+        // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
+        if (widget.patientId != null && widget.doctorId != null) {
+          await supabase.from('patient_tests').insert({
+            'patient_id': widget.patientId,
+            'test_id': 2,
+            'score': pontuacao,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': widget.doctorId,
+          });
+        } else if (_role.isPatient) {
+          // Busca o id do paciente associado ao user.id
+          final patient =
+              await supabase
+                  .from('patients')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+          final patientId = patient?['id'];
+          await supabase.from('patient_tests').insert({
+            'patient_id': patientId,
+            'test_id': 2,
+            'score': pontuacao,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': null,
+          });
+        } else if (_role.isDoctor) {
+          // Busca o id do medico associado ao user.id
+          final doctor =
+              await supabase
+                  .from('doctors')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+          final doctorId = doctor?['id'];
+          await supabase.from('patient_tests').insert({
+            // no futuro deve ser colocado o id do paciente associado ao medico
+            'patient_id': null,
+            'test_id': 2,
+            'score': pontuacao,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': doctorId,
+          });
+        }
       }
 
       Future.delayed(Duration.zero, () {

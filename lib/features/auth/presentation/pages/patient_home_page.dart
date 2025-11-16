@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/widgets/start_dialog.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 
@@ -82,7 +83,19 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.orange.shade200,
                       iconColor: Colors.brown,
                       onTap: () {
-                        context.go(AppRoutes.tmtA);
+                        showModernStartDialog(
+                          context,
+                          titulo: "Instruções do Trail Making Test",
+                          textoExplicativo:
+                              "Ligue os itens na ordem corretqa o mais rápido possível. \n\n"
+                              "Siga a sequência sem pular nenhum elemento. \n"
+                              "TMT-A - conecte os números em ordem crescente (1 -> 2 -> 3 -> ...). \n"
+                              "TMT-B - alterne entre números e letras (1 -> A -> 2 -> B -> 3 -> ...). \n"
+                              "O teste começará quando você apertar INICIAR.",
+                          onStart: () {
+                            context.go(AppRoutes.tmtA);
+                          },
+                        );
                       },
                     ),
                     _buildTestCard(
@@ -91,7 +104,18 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.green.shade200,
                       iconColor: Colors.green.shade700,
                       onTap: () {
-                        context.go(AppRoutes.stroopTest);
+                        showModernStartDialog(
+                          context,
+                          titulo: "Instruções do Stroop Teste",
+                          textoExplicativo:
+                              "Você verá nomes de cores escritos na tela, mas a cor da palavra pode ser diferente do seu significado. \n\n"
+                              "Ignore o que está escrito. \n"
+                              "Fale o mais rápido possível apenas a cor em que a palavra está escrita. \n"
+                              "O teste começará quando você apertar INICIAR.",
+                          onStart: () {
+                            context.go(AppRoutes.stroopTest);
+                          },
+                        );
                       },
                     ),
                     _buildTestCard(
@@ -100,7 +124,18 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.pink.shade200,
                       iconColor: Colors.purple,
                       onTap: () {
-                        context.go(AppRoutes.testeMemoria);
+                        showModernStartDialog(
+                          context,
+                          titulo: "Instruções do Teste de Memória Verbal",
+                          textoExplicativo:
+                              "Você verá palavras na tela, uma por vez. \n\n"
+                              "Clique em NOVO quando for a primeira vez que vê a palabra. \n"
+                              "Clique em REPETIDO quando ela já tiver aparecido antes. \n"
+                              "O teste começará quando você apertar INICIAR.",
+                          onStart: () {
+                            context.go(AppRoutes.testeMemoria);
+                          },
+                        );
                       },
                     ),
                     _buildTestCard(

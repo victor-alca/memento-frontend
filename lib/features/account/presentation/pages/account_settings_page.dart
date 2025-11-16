@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/features/account/presentation/service/account_service.dart';
+import 'package:test_app/features/auth/presentation/pages/login_page.dart';
 
 class AccountSettingsPage extends StatelessWidget {
   const AccountSettingsPage({super.key});
@@ -11,6 +13,7 @@ class AccountSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).user;
+    final _accountService = AccountService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -171,17 +174,67 @@ class AccountSettingsPage extends StatelessWidget {
                                     child: const Text('Cancelar'),
                                   ),
                                   TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Deleção de conta requer função personalizada no Supabase.',
-                                          ),
-                                        ),
+                                    onPressed: () async {
+                                      Navigator.pop(context); // Fecha o dialog
+
+                                      // Mostra loading
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder:
+                                            (context) => const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
                                       );
+
+                                      try {
+                                        await _accountService.deleteAccount();
+
+                                        if (context.mounted) {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Remove loading
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Conta deletada com sucesso',
+                                              ),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+
+                                          // Navega para tela de login
+                                          Navigator.of(
+                                            context,
+                                          ).pushAndRemoveUntil(
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      const LoginPage(),
+                                            ),
+                                            (route) => false,
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Remove loading
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(e.toString()),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
                                     },
                                     child: const Text(
                                       'Confirmar',
@@ -209,18 +262,9 @@ class AccountSettingsPage extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: TextButton(
                 onPressed: () {
-                  final from =
-                      GoRouterState.of(context).uri.queryParameters['from'];
-                  switch (from) {
-                    case 'patient-home':
-                      context.go(AppRoutes.patientHome);
-                      break;
-                    case 'doctor-home':
-                      context.go(AppRoutes.doctorHome);
-                      break;
-                    default:
-                      context.go(AppRoutes.patientHome);
-                  } // default fallback
+                  (user?.isDoctor ?? false)
+                      ? context.go(AppRoutes.doctorHome)
+                      : context.go(AppRoutes.patientHome);
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

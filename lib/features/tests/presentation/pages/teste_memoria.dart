@@ -3,22 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/widgets/start_dialog.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 
-
 class TesteMemoriaPage extends StatefulWidget {
   final int? patientId;
   final String? doctorId;
 
-  const TesteMemoriaPage({
-    super.key,
-    this.patientId,
-    this.doctorId,
-  });
+  const TesteMemoriaPage({super.key, this.patientId, this.doctorId});
 
   @override
   State<TesteMemoriaPage> createState() => _TesteMemoriaPageState();
@@ -65,7 +61,6 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
     sequenciaPalavras = _gerarSequenciaAleatoria();
     tempoInicio = DateTime.now();
     authService = AuthService(supabase.client);
-
   }
 
   List<String> _gerarSequenciaAleatoria() {
@@ -109,72 +104,68 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       );
       double tempoMedio = somaTempos.inMilliseconds / temposDeResposta.length;
 
-      
       final supabase = Supabase.instance.client;
 
       final User? user = supabase.auth.currentUser;
-      
 
       debugPrint(user?.id);
-      
+
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
-      
-      // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
-      if (widget.patientId != null && widget.doctorId != null) {
-        await supabase.from('patient_tests').insert({
-          'patient_id': widget.patientId,
-          'test_id': 3,
-          'score': pontuacao,
-          'average_time': tempoMedio,
-          'time_spent': somaTempos.inMilliseconds,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': widget.doctorId,
-        });
-      }
-      else if(_role.isPatient){
+        UserModel _role = await authService.getUserData(user.id);
 
-      // Busca o id do paciente associado ao user.id
-      final patient = await supabase
-      .from('patients')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
+        // Se foi passado patientId e doctorId (médico fazendo teste para paciente)
+        if (widget.patientId != null && widget.doctorId != null) {
+          await supabase.from('patient_tests').insert({
+            'patient_id': widget.patientId,
+            'test_id': 3,
+            'score': pontuacao,
+            'average_time': tempoMedio,
+            'time_spent': somaTempos.inMilliseconds,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': widget.doctorId,
+          });
+        } else if (_role.isPatient) {
+          // Busca o id do paciente associado ao user.id
+          final patient =
+              await supabase
+                  .from('patients')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
 
-      final patientId = patient?['id'];
+          final patientId = patient?['id'];
 
-        await supabase.from('patient_tests').insert({
-          'patient_id': patientId,
-          'test_id': 3,
-          'score': pontuacao,
-          'average_time': tempoMedio,
-          'time_spent': somaTempos.inMilliseconds,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': null,
-        });
+          await supabase.from('patient_tests').insert({
+            'patient_id': patientId,
+            'test_id': 3,
+            'score': pontuacao,
+            'average_time': tempoMedio,
+            'time_spent': somaTempos.inMilliseconds,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': null,
+          });
+        } else if (_role.isDoctor) {
+          // Busca o id do medico associado ao user.id
+          final doctor =
+              await supabase
+                  .from('doctors')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
 
-      } else if(_role.isDoctor){
+          final doctorId = doctor?['id'];
 
-        // Busca o id do medico associado ao user.id
-        final doctor = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-        final doctorId = doctor?['id'];
-
-        await supabase.from('patient_tests').insert({
-          // no futuro deve ser colocado o id do paciente associado ao medico
-          'patient_id': null,
-          'test_id': 3,
-          'score': pontuacao,
-          'average_time': tempoMedio,
-          'time_spent': somaTempos.inMilliseconds,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': doctorId,
-        });
-      }
+          await supabase.from('patient_tests').insert({
+            // no futuro deve ser colocado o id do paciente associado ao medico
+            'patient_id': null,
+            'test_id': 3,
+            'score': pontuacao,
+            'average_time': tempoMedio,
+            'time_spent': somaTempos.inMilliseconds,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': doctorId,
+          });
+        }
       }
       Future.delayed(Duration.zero, () {
         context.go(
@@ -191,9 +182,6 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
       tempoInicio = DateTime.now();
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {

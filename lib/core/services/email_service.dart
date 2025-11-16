@@ -23,23 +23,25 @@ class EmailService {
   }) async {
     try {
       // URL do Cloudflare Worker que redireciona para o deep link
-      final confirmationUrl = 'https://memento-deeplink-redirect.victoralc887.workers.dev/?token=$confirmationToken';
-      
-      final message = Message()
-        ..from = Address(_username, 'Sistema Memento')
-        ..recipients.add(patientEmail)
-        ..subject = 'Confirmação de Acesso - Dr. $doctorName'
-        ..html = _buildConfirmationEmailHtml(
-          patientName: patientName,
-          doctorName: doctorName,
-          confirmationUrl: confirmationUrl,
-        );
+      final confirmationUrl =
+          'https://memento-deeplink-redirect.victoralc887.workers.dev/?token=$confirmationToken';
+
+      final message =
+          Message()
+            ..from = Address(_username, 'Sistema Memento')
+            ..recipients.add(patientEmail)
+            ..subject = 'Confirmação de Acesso - Dr. $doctorName'
+            ..html = _buildConfirmationEmailHtml(
+              patientName: patientName,
+              doctorName: doctorName,
+              confirmationUrl: confirmationUrl,
+            );
 
       final sendReport = await send(message, _smtpServer);
-      
+
       print('Email enviado com sucesso para $patientEmail');
       print('Report: ${sendReport.toString()}');
-      
+
       return true;
     } catch (e) {
       print('Erro ao enviar email: $e');
@@ -54,21 +56,22 @@ class EmailService {
     required String temporaryPassword,
   }) async {
     try {
-      final message = Message()
-        ..from = Address(_username, 'Sistema Memento')
-        ..recipients.add(patientEmail)
-        ..subject = 'Bem-vindo ao Sistema Memento - Sua conta foi criada'
-        ..html = _buildWelcomeEmailHtml(
-          patientName: patientName,
-          email: patientEmail,
-          temporaryPassword: temporaryPassword,
-        );
+      final message =
+          Message()
+            ..from = Address(_username, 'Sistema Memento')
+            ..recipients.add(patientEmail)
+            ..subject = 'Bem-vindo ao Sistema Memento - Sua conta foi criada'
+            ..html = _buildWelcomeEmailHtml(
+              patientName: patientName,
+              email: patientEmail,
+              temporaryPassword: temporaryPassword,
+            );
 
       final sendReport = await send(message, _smtpServer);
-      
+
       print('Email de boas-vindas enviado para $patientEmail');
       print('Report: ${sendReport.toString()}');
-      
+
       return true;
     } catch (e) {
       print('Erro ao enviar email de boas-vindas: $e');

@@ -59,30 +59,7 @@ class ResultadoTestePage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildNextButton(context),
-          const SizedBox(height: 16),
-          _buildResultadoCard(),
-        ],
-      ),
-    );
-  }
-
-  // Botão de avançar
-  Widget _buildNextButton(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_forward, size: 32),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProximaTela()),
-            );
-          },
-        ),
+        children: [const SizedBox(height: 16), _buildResultadoCard()],
       ),
     );
   }
@@ -175,16 +152,19 @@ class ResultadoTestePage extends StatelessWidget {
   Widget _buildBottomButton(BuildContext context) {
     // Se o médico está realizando o teste para o paciente, volta para a lista de pacientes
     final bool isDoctorContext = patientId != null && doctorId != null;
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () => context.go(
-            isDoctorContext ? AppRoutes.patientsList : AppRoutes.patientHome,
-          ),
+          onPressed:
+              () => context.go(
+                isDoctorContext
+                    ? AppRoutes.patientsList
+                    : AppRoutes.patientHome,
+              ),
           icon: const Icon(Icons.arrow_back),
           label: const Text('Voltar'),
           style: ElevatedButton.styleFrom(
@@ -235,33 +215,6 @@ class _TableCellData extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
       child: Text(text, style: const TextStyle(fontSize: 22)),
-    );
-  }
-}
-
-// ----------------------------
-// TELAS DE NAVEGAÇÃO
-// ----------------------------
-class ProximaTela extends StatelessWidget {
-  const ProximaTela({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Próxima Tela')),
-      body: const Center(child: Text('Conteúdo da próxima tela')),
-    );
-  }
-}
-
-class TelaAnterior extends StatelessWidget {
-  const TelaAnterior({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tela Anterior')),
-      body: const Center(child: Text('Conteúdo da tela anterior')),
     );
   }
 }

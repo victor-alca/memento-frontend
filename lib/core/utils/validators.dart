@@ -11,13 +11,24 @@ class Validators {
   }
 
   /// Valida senha com mínimo de caracteres
-  static String? validatePassword(String? value, {int minLength = 6}) {
+  static String? validatePassword(String? value, {int minLength = 8}) {
     if (value == null || value.isEmpty) {
       return 'Senha é obrigatória';
     }
-    if (value.length < minLength) {
-      return 'Senha deve ter pelo menos $minLength caracteres';
+
+    bool hasMinLength = value.length >= minLength;
+    bool hasUpperCase = value.contains(RegExp(r'[A-Z]'));
+    bool hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+
+    if (!hasMinLength || !hasUpperCase || !hasSpecialChar) {
+      List<String> missing = [];
+      if (!hasMinLength) missing.add('$minLength caracteres');
+      if (!hasUpperCase) missing.add('uma letra maiúscula');
+      if (!hasSpecialChar) missing.add('um caractere especial');
+
+      return 'Senha deve ter: ${missing.join(', ')}';
     }
+
     return null;
   }
 
@@ -35,7 +46,7 @@ class Validators {
       if (value == null || value.isEmpty) {
         return 'CRM é obrigatório para médicos';
       }
-      
+
       // Validar formato: CRM/XX 123456
       final crmRegex = RegExp(r'^CRM\/[A-Z]{2} \d{6}$');
       if (!crmRegex.hasMatch(value)) {
@@ -54,7 +65,10 @@ class Validators {
   }
 
   /// Valida confirmação de senha
-  static String? validatePasswordConfirmation(String? value, String? originalPassword) {
+  static String? validatePasswordConfirmation(
+    String? value,
+    String? originalPassword,
+  ) {
     if (value == null || value.isEmpty) {
       return 'Confirmação de senha é obrigatória';
     }

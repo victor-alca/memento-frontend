@@ -41,7 +41,6 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).user;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -67,9 +66,9 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
-            onPressed: () {
-              // TODO: Navegar para perfil
-            },
+            onPressed:
+                () =>
+                    context.go('${AppRoutes.accountSettings}?from=doctor-home'),
           ),
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
         ],
