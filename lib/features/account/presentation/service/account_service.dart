@@ -23,4 +23,23 @@ class AccountService {
   Future<void> changePassword(String newPassword) async {
     await _supabase.auth.updateUser(UserAttributes(password: newPassword));
   }
+
+  Future<Map<String, dynamic>> deleteAccount() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('Usuário não autenticado');
+
+    final session = _supabase.auth.currentSession;
+
+    try {
+      final response = await _supabase.rpc('delete_user_account');
+
+      await _supabase.auth.signOut();
+
+      return {'success': true, 'data': response};
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao deletar conta: ${e.message}');
+    } catch (e) {
+      throw Exception('Erro inesperado ao deletar conta: $e');
+    }
+  }
 }

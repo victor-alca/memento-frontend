@@ -32,7 +32,7 @@ class TmtB extends StatefulWidget {
 
 class _TmtBState extends State<TmtB> {
   final Random _random = Random();
-  int currentIndex = 0; 
+  int currentIndex = 0;
   int erros = 0;
 
   List<ButtonInfoB> _buttonInfos = [];
@@ -40,8 +40,26 @@ class _TmtBState extends State<TmtB> {
 
   // sequência fixa do TMT-B
   final List<String> charList = [
-    '1', 'A', '2', 'B', '3', 'C', '4', 'D', '5', 'E',
-    '6', 'F', '7', 'G', '8', 'H', '9', 'I', '10', 'J'
+    '1',
+    'A',
+    '2',
+    'B',
+    '3',
+    'C',
+    '4',
+    'D',
+    '5',
+    'E',
+    '6',
+    'F',
+    '7',
+    'G',
+    '8',
+    'H',
+    '9',
+    'I',
+    '10',
+    'J',
   ];
 
   late final AuthService authService;
@@ -54,7 +72,7 @@ class _TmtBState extends State<TmtB> {
     authService = AuthService(supabase.client);
   }
 
-void _generateButtons(BuildContext context) {
+  void _generateButtons(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     const double buttonSize = 40;
     final double safeTop = kToolbarHeight + 20;
@@ -62,41 +80,32 @@ void _generateButtons(BuildContext context) {
     const double restartBtnWidth = 56;
     final safeArea = MediaQuery.of(context).padding;
 
-
     final appBarHeight = kToolbarHeight;
 
-
     const double restartBtnHeight = 56;
-      final double usableHeight = screenSize.height
-      - appBarHeight
-      - safeArea.top
-      - safeArea.bottom
-      - 40;
-
+    final double usableHeight =
+        screenSize.height - appBarHeight - safeArea.top - safeArea.bottom - 40;
 
     currentIndex = 0;
     erros = 0;
     _buttonInfos.clear();
 
-
     for (var char in charList) {
       double left, top;
       bool overlap;
 
-
       // tenta achar posição válida
       do {
         overlap = false;
-      left = padding +
-          _random.nextDouble() *
-              (screenSize.width - buttonSize - padding * 2);
+        left =
+            padding +
+            _random.nextDouble() *
+                (screenSize.width - buttonSize - padding * 2);
 
-
-      top = padding +
-          _random.nextDouble() *
-              (usableHeight - buttonSize - padding * 2) +
-          40;
-
+        top =
+            padding +
+            _random.nextDouble() * (usableHeight - buttonSize - padding * 2) +
+            40;
 
         for (var other in _buttonInfos) {
           if ((left - other.left).abs() < buttonSize + padding &&
@@ -106,25 +115,17 @@ void _generateButtons(BuildContext context) {
           }
         }
 
-
         if (left > screenSize.width - restartBtnWidth - 10 &&
             top < safeTop + restartBtnHeight + 10) {
           overlap = true;
         }
       } while (overlap);
 
-
-      _buttonInfos.add(ButtonInfoB(
-        value: char,
-        left: left,
-        top: top,
-      ));
+      _buttonInfos.add(ButtonInfoB(value: char, left: left, top: top));
     }
-
 
     setState(() {});
   }
-
 
   void _disableButton(String value) {
     setState(() {
@@ -162,46 +163,48 @@ void _generateButtons(BuildContext context) {
       final User? user = supabase.auth.currentUser;
       debugPrint(user?.id);
       if (user != null) {
-      UserModel _role = await authService.getUserData(user.id);
-      if(_role.isPatient){
-      // Busca o id do paciente associado ao user.id
-      final patient = await supabase
-      .from('patients')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-      final patientId = patient?['id'];
-        await supabase.from('patient_tests').insert({
-          'patient_id': patientId,
-          'test_id': 2,
-          'score': pontuacao,
-          'average_time': null,
-          'time_spent': tempoTotal,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': null,
-        });
-      } else if(_role.isDoctor){
-        // Busca o id do medico associado ao user.id
-        final doctor = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-        final doctorId = doctor?['id'];
-        await supabase.from('patient_tests').insert({
-          // no futuro deve ser colocado o id do paciente associado ao medico
-          'patient_id': null,
-          'test_id': 2,
-          'score': pontuacao,
-          'average_time': null,
-          'time_spent': tempoTotal,
-          'test_date': DateTime.now().toIso8601String(),
-          'doctor_id': doctorId,
-        });
-      }
+        UserModel _role = await authService.getUserData(user.id);
+        if (_role.isPatient) {
+          // Busca o id do paciente associado ao user.id
+          final patient =
+              await supabase
+                  .from('patients')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+          final patientId = patient?['id'];
+          await supabase.from('patient_tests').insert({
+            'patient_id': patientId,
+            'test_id': 2,
+            'score': pontuacao,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': null,
+          });
+        } else if (_role.isDoctor) {
+          // Busca o id do medico associado ao user.id
+          final doctor =
+              await supabase
+                  .from('doctors')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+          final doctorId = doctor?['id'];
+          await supabase.from('patient_tests').insert({
+            // no futuro deve ser colocado o id do paciente associado ao medico
+            'patient_id': null,
+            'test_id': 2,
+            'score': pontuacao,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': doctorId,
+          });
+        }
       }
 
-        Future.delayed(Duration.zero, () {
+      Future.delayed(Duration.zero, () {
         context.go(
           AppRoutes.resultadoTeste,
           extra: ResultadoTesteArgs.tmt(
@@ -264,9 +267,8 @@ void _generateButtons(BuildContext context) {
                       shape: const CircleBorder(),
                       backgroundColor: btn.disabled ? Colors.grey : null,
                     ),
-                    onPressed: btn.disabled
-                        ? null
-                        : () => _disableButton(btn.value),
+                    onPressed:
+                        btn.disabled ? null : () => _disableButton(btn.value),
                     child: Text(btn.value),
                   ),
                 ),
