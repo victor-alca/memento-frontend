@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/provider/user_provider.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/widgets/resultado_teste.dart';
 import 'package:test_app/features/account/presentation/pages/account_settings_page.dart';
 import 'package:test_app/features/account/presentation/pages/change_password_page.dart';
 import 'package:test_app/features/account/presentation/pages/edit_account_page.dart';
@@ -155,19 +156,22 @@ GoRouter createAppRouter(BuildContext context) {
         path: AppRoutes.stroopTest,
         builder: (context, state) => const StroopTestPage(),
       ),
-      GoRoute(path: AppRoutes.tmtB, builder: (context, state) => TmtB()),
+      GoRoute(
+        path: AppRoutes.tmtB,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return TmtB(extra: extra);
+        },
+      ),
       GoRoute(
         path: AppRoutes.resultadoTeste,
         builder: (context, state) {
           final args = state.extra as ResultadoTesteArgs;
-          return ResultadoTestePage(
-            pontuacao: args.pontuacao,
-            tempoMedioMs: args.tempoMedioMs,
-            patientId: args.patientId,
-            doctorId: args.doctorId,
-          );
+
+          return ResultadoTestePage(args: args);
         },
       ),
+
       GoRoute(
         path: AppRoutes.lineChart,
         builder: (context, state) => const DashboardScreen(),

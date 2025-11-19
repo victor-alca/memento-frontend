@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/enum/test_type.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
@@ -24,7 +25,9 @@ class ButtonInfoB {
 }
 
 class TmtB extends StatefulWidget {
-  const TmtB({super.key});
+  final Map<String, dynamic>? extra;
+
+  const TmtB({super.key, this.extra});
 
   @override
   _TmtBState createState() => _TmtBState();
@@ -63,6 +66,12 @@ class _TmtBState extends State<TmtB> {
   ];
 
   late final AuthService authService;
+
+  double? get tempoA => widget.extra?['tempoA'] as double?;
+  int? get pontuacaoA => widget.extra?['pontuacaoA'] as int?;
+  int? get patientId => widget.extra?['patientId'] as int?;
+  String? get doctorId => widget.extra?['doctorId'] as String?;
+
   @override
   void initState() {
     super.initState();
@@ -152,50 +161,69 @@ class _TmtBState extends State<TmtB> {
   Future<void> _salvarResultado() async {
     try {
       final supabase = Supabase.instance.client;
-      int pontuacao = 20 - erros;
 
-      double tempoTotal = 0.0;
+      // Calcula pontuação B (20 - erros)
+      int pontuacaoB = 20 - erros;
+
+      // Pontuação total = A + B
+      int pontuacaoTotal = (pontuacaoA ?? 0) + pontuacaoB;
+
+      // Tempo B em SEGUNDOS
+      double tempoB = 0.0;
       if (_startTime != null) {
-        tempoTotal =
-            DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
+        tempoB = DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
       }
 
+      // Tempo total = A + B
+      double tempoTotal = (tempoA ?? 0.0) + tempoB;
+
       final User? user = supabase.auth.currentUser;
-      debugPrint(user?.id);
       if (user != null) {
         UserModel _role = await authService.getUserData(user.id);
-        if (_role.isPatient) {
-          // Busca o id do paciente associado ao user.id
+
+        if (patientId != null && doctorId != null) {
+          await supabase.from('patient_tests').insert({
+            'patient_id': patientId,
+            'test_id': 2,
+            'score': pontuacaoTotal,
+            'average_time': null,
+            'time_spent': tempoTotal,
+            'test_date': DateTime.now().toIso8601String(),
+            'doctor_id': doctorId,
+          });
+        } else if (_role.isPatient) {
           final patient =
               await supabase
                   .from('patients')
                   .select('id')
                   .eq('user_id', user.id)
                   .maybeSingle();
+
           final patientId = patient?['id'];
+
           await supabase.from('patient_tests').insert({
             'patient_id': patientId,
             'test_id': 2,
-            'score': pontuacao,
+            'score': pontuacaoTotal,
             'average_time': null,
             'time_spent': tempoTotal,
             'test_date': DateTime.now().toIso8601String(),
             'doctor_id': null,
           });
         } else if (_role.isDoctor) {
-          // Busca o id do medico associado ao user.id
           final doctor =
               await supabase
                   .from('doctors')
                   .select('id')
                   .eq('user_id', user.id)
                   .maybeSingle();
+
           final doctorId = doctor?['id'];
+
           await supabase.from('patient_tests').insert({
-            // no futuro deve ser colocado o id do paciente associado ao medico
             'patient_id': null,
             'test_id': 2,
-            'score': pontuacao,
+            'score': pontuacaoTotal,
             'average_time': null,
             'time_spent': tempoTotal,
             'test_date': DateTime.now().toIso8601String(),
@@ -204,17 +232,23 @@ class _TmtBState extends State<TmtB> {
         }
       }
 
-      Future.delayed(Duration.zero, () {
+      if (mounted) {
         context.go(
           AppRoutes.resultadoTeste,
-          extra: ResultadoTesteArgs.tmt(
-            pontuacao: pontuacao,
-            tempoTotalMs: tempoTotal,
+          extra: ResultadoTesteArgs(
+            tipo: TestType.tmtA,
+            pontuacao: pontuacaoTotal,
+            tempoMedioMs: null,
+            tempoA: tempoA,
+            tempoB: tempoB,
+            tempoTotalSeg: tempoTotal,
+            pontuacaoA: pontuacaoA,
+            pontuacaoB: pontuacaoB,
+            patientId: patientId,
+            doctorId: doctorId,
           ),
         );
-      });
-
-      debugPrint("Resultado salvo com sucesso!");
+      }
     } catch (e) {
       debugPrint("Erro ao salvar resultado: $e");
     }
@@ -238,9 +272,27 @@ class _TmtBState extends State<TmtB> {
           Positioned(
             top: 10,
             left: 10,
-            child: Text(
-              'Erros: $erros',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Erros: $erros',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (tempoA != null)
+                  Text(
+                    'Tempo A: ${tempoA!.toStringAsFixed(2)}s',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                if (pontuacaoA != null)
+                  Text(
+                    'Pontuação A: $pontuacaoA',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+              ],
             ),
           ),
           Positioned(

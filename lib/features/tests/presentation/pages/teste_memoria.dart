@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/enum/test_type.dart';
 import 'package:test_app/core/widgets/start_dialog.dart';
 import 'package:test_app/features/auth/models/user_model.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
@@ -171,8 +172,12 @@ class _TesteMemoriaPageState extends State<TesteMemoriaPage> {
         context.go(
           AppRoutes.resultadoTeste,
           extra: ResultadoTesteArgs(
+            tipo: TestType.memoriaVerbal,
             pontuacao: pontuacao,
+            acertos: pontuacao,
+            erros: erros,
             tempoMedioMs: tempoMedio,
+            tempoTotalSeg: somaTempos.inMilliseconds / 1000,
             patientId: widget.patientId,
             doctorId: widget.doctorId,
           ),
