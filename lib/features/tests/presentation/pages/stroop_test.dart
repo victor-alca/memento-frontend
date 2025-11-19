@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/app/router/app_routes.dart';
+import 'package:test_app/core/enum/test_type.dart';
 import 'package:test_app/core/widgets/start_dialog.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
@@ -58,9 +59,10 @@ class _StroopTestPageState extends State<StroopTestPage> {
   bool _lastAnswerCorrect = false;
 
   // Controle de tempo
-  int _timeRemaining = 15;
+  int _timeRemaining = 15; //15
 
   late final AuthService authService;
+
   @override
   void initState() {
     super.initState();
@@ -81,14 +83,18 @@ class _StroopTestPageState extends State<StroopTestPage> {
         }
       });
     } else {
-      _showPermissionDialog();
+      if (mounted) {
+        _showPermissionDialog();
+      }
     }
   }
 
   Future<void> _requestMicrophonePermission() async {
     final status = await Permission.microphone.request();
     _permissionGranted = status == PermissionStatus.granted;
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _showPermissionDialog() {
@@ -126,6 +132,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize(
       onError: (error) {
+        if (!mounted) return;
+
         setState(() {
           _speechListening = false;
         });
@@ -139,6 +147,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
         }
       },
       onStatus: (status) {
+        if (!mounted) return;
+
         if (status == 'notListening') {
           setState(() {
             _speechListening = false;
@@ -154,16 +164,16 @@ class _StroopTestPageState extends State<StroopTestPage> {
         }
       },
     );
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _gerarProximoItem() {
+    if (!mounted) return;
+
     // Verifica se ainda há itens para mostrar
-    print("0000000000000000000000000000000000");
-    print(indiceAtual);
-    print(totalItens);
     if (indiceAtual >= totalItens) {
-      print("AAAAAAAAAAAAAAAAAAAAAAAAAA");
       _finalizarTeste();
       return;
     }
@@ -182,7 +192,9 @@ class _StroopTestPageState extends State<StroopTestPage> {
     tempoInicio = DateTime.now();
     _timeRemaining = 15;
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
 
     // Aguarda um pouco antes de iniciar o reconhecimento (para dar tempo da UI atualizar)
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -196,6 +208,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
   }
 
   void _ensureListening() {
+    if (!mounted) return;
+
     // Força o início do reconhecimento de voz
     if (_speechEnabled && !_speechListening && !_showingFeedback) {
       _startListening();
@@ -217,12 +231,14 @@ class _StroopTestPageState extends State<StroopTestPage> {
       await Future.delayed(const Duration(seconds: 1));
       if (_showingFeedback || !mounted) return false;
 
-      setState(() {
-        _timeRemaining--;
-      });
+      if (mounted) {
+        setState(() {
+          _timeRemaining--;
+        });
+      }
 
       if (_timeRemaining <= 0) {
-        if (!_showingFeedback && indiceAtual < totalItens) {
+        if (!_showingFeedback && indiceAtual < totalItens && mounted) {
           _processarResposta(''); // Processa como resposta vazia (erro)
         }
         return false;
@@ -233,7 +249,7 @@ class _StroopTestPageState extends State<StroopTestPage> {
   }
 
   void _startListening() async {
-    if (!_speechEnabled || _speechListening || _showingFeedback) {
+    if (!_speechEnabled || _speechListening || _showingFeedback || !mounted) {
       return;
     }
 
@@ -248,24 +264,32 @@ class _StroopTestPageState extends State<StroopTestPage> {
           cancelOnError: false,
         ),
       );
-      setState(() {
-        _speechListening = true;
-      });
+      if (mounted) {
+        setState(() {
+          _speechListening = true;
+        });
+      }
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _speechListening = false;
+        });
+      }
+    }
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    if (mounted) {
       setState(() {
         _speechListening = false;
       });
     }
   }
 
-  void _stopListening() async {
-    await _speechToText.stop();
-    setState(() {
-      _speechListening = false;
-    });
-  }
-
   void _onSpeechResult(result) {
+    if (!mounted) return;
+
     setState(() {
       _lastWords = result.recognizedWords.toLowerCase();
     });
@@ -294,6 +318,8 @@ class _StroopTestPageState extends State<StroopTestPage> {
   }
 
   void _processarResposta(String resposta) {
+    if (!mounted) return;
+
     final tempoResposta = DateTime.now().difference(tempoInicio);
     temposDeResposta.add(tempoResposta);
 
@@ -312,13 +338,17 @@ class _StroopTestPageState extends State<StroopTestPage> {
     }
 
     // Mostra feedback visual
-    setState(() {
-      _showingFeedback = true;
-      _lastAnswerCorrect = acertou;
-    });
+    if (mounted) {
+      setState(() {
+        _showingFeedback = true;
+        _lastAnswerCorrect = acertou;
+      });
+    }
 
     // Espera um pouco mostrando o feedback, depois vai para próximo item
     Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+
       setState(() {
         _showingFeedback = false;
         _lastWords = ''; // Limpa a última resposta
@@ -347,8 +377,14 @@ class _StroopTestPageState extends State<StroopTestPage> {
   }
 
   void _finalizarTeste() async {
+    if (!mounted) return;
+
     Duration somaTempos = temposDeResposta.fold(Duration.zero, (a, b) => a + b);
-    double tempoMedio = somaTempos.inMilliseconds / temposDeResposta.length;
+    double tempoMedio =
+        temposDeResposta.isNotEmpty
+            ? somaTempos.inMilliseconds / temposDeResposta.length
+            : 0;
+    double tempoTotalSeg = somaTempos.inMilliseconds / 1000;
 
     // Salvar no Supabase
     final supabase = Supabase.instance.client;
@@ -414,8 +450,12 @@ class _StroopTestPageState extends State<StroopTestPage> {
       context.go(
         AppRoutes.resultadoTeste,
         extra: ResultadoTesteArgs(
+          tipo: TestType.stroop,
           pontuacao: pontuacao,
           tempoMedioMs: tempoMedio,
+          tempoTotalSeg: tempoTotalSeg,
+          acertos: pontuacao,
+          erros: erros,
           patientId: widget.patientId,
           doctorId: widget.doctorId,
         ),
