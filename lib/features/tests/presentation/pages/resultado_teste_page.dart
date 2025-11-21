@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/app/router/app_routes.dart';
 import 'package:test_app/features/tests/presentation/models/resultado_test_args.dart';
 import 'package:test_app/core/widgets/resultado_teste.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:test_app/features/auth/service/auth_service.dart';
 import 'package:test_app/app/provider/supabase_provider.dart';
 import 'package:test_app/core/enum/test_type.dart';
@@ -57,6 +56,18 @@ class _ResultadoTestePageState extends State<ResultadoTestePage> {
     }
   }
 
+  void _handleVoltar() {
+    // Se vier do dashboard, volta para o dashboard
+    if (widget.args.fromDashboard) {
+      context.go(AppRoutes.lineChart);
+    } else {
+      // Se vier de fazer o teste, volta para a home
+      isDoctor
+          ? context.go(AppRoutes.doctorHome)
+          : context.go(AppRoutes.patientHome);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,11 +95,7 @@ class _ResultadoTestePageState extends State<ResultadoTestePage> {
                 pontuacao: widget.args.pontuacao,
                 pontuacaoA: widget.args.pontuacaoA,
                 pontuacaoB: widget.args.pontuacaoB,
-                onVoltar: () {
-                  isDoctor
-                      ? context.go(AppRoutes.doctorHome)
-                      : context.go(AppRoutes.patientHome);
-                },
+                onVoltar: _handleVoltar,
               ),
     );
   }

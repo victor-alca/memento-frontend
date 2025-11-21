@@ -173,6 +173,57 @@ class ResultadoTeste extends StatelessWidget {
   //                      CARDS: TMT
   // ============================================================
   Widget _buildTmtCards() {
+    // Se vier do dashboard e não tiver tempoA/tempoB separados, mostra apenas resumo
+    final bool showSummaryOnly = (tempoA == null || tempoB == null);
+
+    if (showSummaryOnly) {
+      return _buildTmtSummaryCards();
+    }
+
+    // Versão completa com A, B e Total
+    return _buildTmtFullCards();
+  }
+
+  // ============================================================
+  //                  CARDS: TMT RESUMO (do Dashboard)
+  // ============================================================
+  Widget _buildTmtSummaryCards() {
+    return Column(
+      children: [
+        _buildMetricCard(
+          title: "Tempo Total",
+          value: tempoTotalSeg.toStringAsFixed(2),
+          unit: "segundos",
+          color: const Color(0xFF6C63FF),
+          icon: Icons.access_time,
+        ),
+        const SizedBox(height: 12),
+        _buildMetricCard(
+          title: "Speed Score",
+          value:
+              tempoTotalSeg > 0
+                  ? (1 / tempoTotalSeg).toStringAsFixed(3)
+                  : "0.000",
+          unit: "s⁻¹",
+          color: const Color(0xFF9C27B0),
+          icon: Icons.flash_on,
+        ),
+        const SizedBox(height: 12),
+        _buildMetricCard(
+          title: "Pontuação Total",
+          value: pontuacao?.toString() ?? "0",
+          unit: "pontos",
+          color: const Color(0xFF29B6F6),
+          icon: Icons.emoji_events,
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  //              CARDS: TMT COMPLETO (após fazer o teste)
+  // ============================================================
+  Widget _buildTmtFullCards() {
     // Tempos estimados da população controle
     const double tempoEstimadoA = 20.0; // segundos
     const double tempoEstimadoB = 46.0; // segundos
@@ -280,7 +331,7 @@ class ResultadoTeste extends StatelessWidget {
         _buildMetricCard(
           title: "Speed Score A",
           value: speedScoreA.toStringAsFixed(2),
-          unit: '',
+          unit: descricaoSpeedA,
           color:
               speedScoreA >= speedScoreControleA
                   ? const Color(0xFF66BB6A) // Verde se maior/igual
@@ -326,7 +377,7 @@ class ResultadoTeste extends StatelessWidget {
         _buildMetricCard(
           title: "Speed Score B",
           value: speedScoreB.toStringAsFixed(2),
-          unit: ' ',
+          unit: descricaoSpeedB,
           color:
               speedScoreB >= speedScoreControleB
                   ? const Color(0xFF66BB6A) // Verde se maior/igual

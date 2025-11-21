@@ -13,6 +13,7 @@ class ResultadoTesteArgs {
   final int? pontuacaoB;
   final int? patientId;
   final String? doctorId;
+  final bool fromDashboard; // Nova flag
 
   ResultadoTesteArgs({
     required this.tipo,
@@ -27,5 +28,6 @@ class ResultadoTesteArgs {
     this.pontuacaoB,
     this.patientId,
     this.doctorId,
+    this.fromDashboard = false, // Default false
   });
 }
