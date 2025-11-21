@@ -187,7 +187,7 @@ class _TmtBState extends State<TmtB> {
             'test_id': 2,
             'score': pontuacaoTotal,
             'average_time': null,
-            'time_spent': tempoTotal,
+            'time_spent': tempoTotal * 1000,
             'test_date': DateTime.now().toIso8601String(),
             'doctor_id': doctorId,
           });
@@ -206,7 +206,7 @@ class _TmtBState extends State<TmtB> {
             'test_id': 2,
             'score': pontuacaoTotal,
             'average_time': null,
-            'time_spent': tempoTotal,
+            'time_spent': tempoTotal * 1000,
             'test_date': DateTime.now().toIso8601String(),
             'doctor_id': null,
           });
@@ -225,7 +225,7 @@ class _TmtBState extends State<TmtB> {
             'test_id': 2,
             'score': pontuacaoTotal,
             'average_time': null,
-            'time_spent': tempoTotal,
+            'time_spent': tempoTotal * 1000,
             'test_date': DateTime.now().toIso8601String(),
             'doctor_id': doctorId,
           });
