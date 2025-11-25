@@ -141,7 +141,7 @@ ON CONFLICT (id) DO NOTHING;
 -- 5. FUNÇÕES E TRIGGERS
 --------------------------------------
 
--- FUNÇÃO
+-- 5.1. FUNÇÃO: Criar usuário automaticamente ao registrar no auth
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
 RETURNS trigger AS $$
 DECLARE
@@ -173,11 +173,129 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- TRIGGER
+-- TRIGGER: Executar handle_new_auth_user após inserção em auth.users
 CREATE OR REPLACE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW
 EXECUTE PROCEDURE public.handle_new_auth_user();
+
+-- 5.2. FUNÇÃO RPC: Buscar usuário por email
+CREATE OR REPLACE FUNCTION public.search_user_by_email(user_email TEXT)
+RETURNS TABLE (
+    id UUID,
+    name VARCHAR,
+    birth_date DATE,
+    email VARCHAR
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.id,
+        u.name,
+        u.birth_date,
+        au.email
+    FROM public.users u
+    INNER JOIN auth.users au ON u.id = au.id
+    WHERE au.email = user_email
+    AND EXISTS (SELECT 1 FROM public.patients p WHERE p.user_id = u.id);
+END;
+$$;
+
+-- 5.3. FUNÇÃO RPC: Listar pacientes de um médico
+CREATE OR REPLACE FUNCTION public.get_doctor_patients(doctor_user_id UUID)
+RETURNS TABLE (
+    patient_id INT,
+    user_id UUID,
+    name VARCHAR,
+    birth_date DATE,
+    email VARCHAR,
+    confirmed BOOLEAN,
+    confirmation_token VARCHAR,
+    token_expires_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.id as patient_id,
+        p.user_id,
+        u.name,
+        u.birth_date,
+        au.email,
+        da.confirmed,
+        da.confirmation_token,
+        da.token_expires_at
+    FROM public.doctor_access da
+    INNER JOIN public.doctors d ON da.doctor_id = d.id
+    INNER JOIN public.patients p ON da.patient_id = p.id
+    INNER JOIN public.users u ON p.user_id = u.id
+    INNER JOIN auth.users au ON u.id = au.id
+    WHERE d.user_id = doctor_user_id;
+END;
+$$;
+
+-- 5.4. FUNÇÃO RPC: Confirmar acesso do médico aos dados do paciente
+CREATE OR REPLACE FUNCTION public.confirm_patient_access(token VARCHAR)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    access_record RECORD;
+BEGIN
+    -- Buscar registro pelo token
+    SELECT * INTO access_record
+    FROM public.doctor_access
+    WHERE confirmation_token = token
+    AND token_expires_at > NOW()
+    AND confirmed = FALSE;
+
+    -- Se não encontrou ou expirado
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+
+    -- Confirmar acesso
+    UPDATE public.doctor_access
+    SET confirmed = TRUE,
+        confirmation_token = NULL,
+        token_expires_at = NULL
+    WHERE id = access_record.id;
+
+    RETURN TRUE;
+END;
+$$;
+
+-- 5.5. FUNÇÃO RPC: Deletar conta do usuário (cascata)
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    user_uuid UUID;
+BEGIN
+    -- Pega o ID do usuário autenticado
+    user_uuid := auth.uid();
+    
+    IF user_uuid IS NULL THEN
+        RETURN json_build_object('success', false, 'message', 'Não autenticado');
+    END IF;
+
+    -- Deletar da tabela users (cascata vai deletar o resto)
+    DELETE FROM public.users WHERE id = user_uuid;
+    
+    -- Deletar do auth.users
+    DELETE FROM auth.users WHERE id = user_uuid;
+    
+    RETURN json_build_object('success', true);
+END;
+$$;
 
 
 --------------------------------------
