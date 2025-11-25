@@ -144,7 +144,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       color: Colors.blue.shade200,
                       iconColor: Colors.blue.shade700,
                       onTap: () {
-                        context.go(AppRoutes.lineChart);
+                        context.push(AppRoutes.lineChart);
                       },
                     ),
                   ],

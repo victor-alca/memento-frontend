@@ -9,6 +9,7 @@ class TestResult {
   final double timeSpent;
   final DateTime testDate;
   final double? averageTime;
+  final String? doctorId;
 
   TestResult({
     required this.id,
@@ -19,6 +20,7 @@ class TestResult {
     required this.timeSpent,
     required this.testDate,
     this.averageTime,
+    this.doctorId,
   });
 
   factory TestResult.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class TestResult {
           json['average_time'] != null
               ? (json['average_time'] as num).toDouble()
               : null,
+      doctorId: json['doctor_id'] as String?,
     );
   }
 }
@@ -52,17 +55,24 @@ class TestResultsService {
     DateTime? startDate,
     DateTime? endDate,
     int? testId,
+    int? patientId,
+    bool? withDoctorOnly, // Novo parâmetro
   }) async {
     try {
-      // First, get the patient_id from the user_id
-      final patientResponse =
-          await _supabase
-              .from('patients')
-              .select('id')
-              .eq('user_id', userId)
-              .single();
+      int finalPatientId;
 
-      final int patientId = patientResponse['id'] as int;
+      if (patientId != null) {
+        finalPatientId = patientId;
+      } else {
+        final patientResponse =
+            await _supabase
+                .from('patients')
+                .select('id')
+                .eq('user_id', userId)
+                .single();
+
+        finalPatientId = patientResponse['id'] as int;
+      }
 
       // Build the base query
       var queryBuilder = _supabase
@@ -75,13 +85,19 @@ class TestResultsService {
             time_spent,
             test_date,
             average_time,
+            doctor_id,
             tests!inner(name)
           ''')
-          .eq('patient_id', patientId);
+          .eq('patient_id', finalPatientId);
 
       // Apply test type filter
       if (testId != null) {
         queryBuilder = queryBuilder.eq('test_id', testId);
+      }
+
+      // Apply doctor filter
+      if (withDoctorOnly == true) {
+        queryBuilder = queryBuilder.not('doctor_id', 'is', null);
       }
 
       // Apply date range filters
@@ -119,6 +135,7 @@ class TestResultsService {
                   json['average_time'] != null
                       ? (json['average_time'] as num).toDouble()
                       : null,
+              doctorId: json['doctor_id'] as String?, // Adicionar este campo
             );
           }).toList();
 
