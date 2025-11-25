@@ -32,6 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoadingResults = false;
   int? _selectedTestType;
   List<Map<String, dynamic>> _testTypes = [];
+  bool _showOnlyWithDoctor = false; // Novo estado para o filtro
 
   @override
   void initState() {
@@ -70,6 +71,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         startDate: _rangeStart,
         endDate: _rangeEnd,
         testId: _selectedTestType,
+        patientId: widget.patientId,
+        withDoctorOnly: _showOnlyWithDoctor, // Adicionar o novo filtro
       );
 
       setState(() {
@@ -123,53 +126,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 )
                 : const Text(
-                  'Olá!',
+                  'Histórico',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Bem-vindo à página de resultados!',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            // Back button
-            TextButton(
-              onPressed: () {
-                final bool isDoctorViewing =
-                    widget.patientId != null && widget.patientName != null;
-                context.go(isDoctorViewing ? '/patients' : '/patient-home');
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.arrow_back, size: 20, color: Colors.black),
-                  SizedBox(width: 8),
-                  Text(
-                    'Voltar',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 24),
             // Calendar Card
             _buildCalendarCard(),
@@ -178,6 +147,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Test Type Filter
             _buildTestTypeFilter(),
             const SizedBox(height: 20),
+
+            // Doctor Filter - apenas para médicos visualizando pacientes
+            if (isDoctorViewing) ...[
+              _buildDoctorFilter(),
+              const SizedBox(height: 20),
+            ],
 
             // Range info
             if (_rangeStart != null && _rangeEnd != null)
@@ -219,6 +194,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorFilter() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Icon(
+            Icons.medical_services_outlined,
+            size: 20,
+            color: Colors.blue.shade600,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Mostrar apenas testes realizados com médico',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          Transform.scale(
+            scale: 0.9,
+            child: Checkbox(
+              value: _showOnlyWithDoctor,
+              onChanged: (value) {
+                setState(() {
+                  _showOnlyWithDoctor = value ?? false;
+                });
+                _loadTestResults();
+              },
+              activeColor: Colors.blue.shade600,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -530,13 +558,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        result.testName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              result.testName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          // Indicador de teste com médico
+                          if (result.doctorId != null) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.blue.shade200,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.medical_services,
+                                    size: 12,
+                                    color: Colors.blue.shade600,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Com médico',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.blue.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
