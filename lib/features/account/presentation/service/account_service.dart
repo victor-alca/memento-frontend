@@ -1,7 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:test_app/core/services/email_service.dart';
 
 class AccountService {
   final _supabase = Supabase.instance.client;
+  final _emailService = EmailService();
 
   Future<void> updateUserData({
     required String name,
@@ -22,6 +24,32 @@ class AccountService {
 
   Future<void> changePassword(String newPassword) async {
     await _supabase.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
+  Future<void> sendTemporaryPassword({
+    required String email,
+    required String userName,
+    required String temporaryPassword,
+  }) async {
+    try {
+      // Atualiza a senha do usuário diretamente
+      await _supabase.auth.updateUser(
+        UserAttributes(password: temporaryPassword),
+      );
+
+      // Envia email com a senha temporária usando o EmailService existente
+      final success = await _emailService.sendWelcomeEmail(
+        patientEmail: email,
+        patientName: userName,
+        temporaryPassword: temporaryPassword,
+      );
+
+      if (!success) {
+        throw Exception('Falha ao enviar email');
+      }
+    } catch (e) {
+      throw Exception('Erro ao enviar senha temporária: $e');
+    }
   }
 
   Future<Map<String, dynamic>> deleteAccount() async {
