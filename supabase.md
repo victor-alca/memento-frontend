@@ -226,7 +226,7 @@ CREATE POLICY "doctor_can_insert_patients" ON public.patients FOR INSERT TO PUBL
 DROP POLICY IF EXISTS "doctor_can_search_all_patients" ON public.patients;
 CREATE POLICY "doctor_can_search_all_patients" ON public.patients FOR SELECT TO PUBLIC USING ((EXISTS ( SELECT 1 FROM doctors WHERE (doctors.user_id = auth.uid()))));
 
--- 6.5. tests Policies (Tabela de metadados, geralmente mais aberta)
+-- 6.5. tests Policies
 DROP POLICY IF EXISTS "Authenticated users can select tests" ON public.tests;
 CREATE POLICY "Authenticated users can select tests" ON public.tests FOR SELECT TO PUBLIC USING ((auth.role() = 'authenticated'::text));
 
