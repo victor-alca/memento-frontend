@@ -111,36 +111,6 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                   ],
                 ),
               ),
-
-              // Estatísticas rápidas
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Resumo Rápido',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatItem('Pacientes', '0'),
-                        _buildStatItem('Testes Hoje', '0'),
-                        _buildStatItem('Total de Testes', '0'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
