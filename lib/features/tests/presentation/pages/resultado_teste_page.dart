@@ -59,7 +59,7 @@ class _ResultadoTestePageState extends State<ResultadoTestePage> {
   void _handleVoltar() {
     // Se vier do dashboard, volta para o dashboard
     if (widget.args.fromDashboard) {
-      context.go(AppRoutes.lineChart);
+      context.pop();
     } else {
       // Se vier de fazer o teste, volta para a home
       isDoctor

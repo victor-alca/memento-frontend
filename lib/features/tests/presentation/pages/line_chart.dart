@@ -529,7 +529,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             // Navigate to ResultadoTestePage with test data
-            context.go(
+            context.push(
               AppRoutes.resultadoTeste,
               extra: _createResultadoTesteArgs(result),
             );
