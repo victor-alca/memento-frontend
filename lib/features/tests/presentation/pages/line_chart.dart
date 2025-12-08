@@ -507,8 +507,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildTestResultCard(TestResult result) {
-    // Convert UTC time to local time
-    final localDate = result.testDate.toLocal();
+    // Convert UTC time to local time and add 3 hours to compensate for timezone difference
+    final localDate = result.testDate.toLocal().add(const Duration(hours: 3));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

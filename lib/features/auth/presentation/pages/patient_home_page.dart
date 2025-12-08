@@ -87,7 +87,7 @@ class _PatientHomePageState extends State<PatientHomePage> {
                           context,
                           titulo: "Instruções do Trail Making Test",
                           textoExplicativo:
-                              "Ligue os itens na ordem corretqa o mais rápido possível. \n\n"
+                              "Ligue os itens na ordem correta o mais rápido possível. \n\n"
                               "Siga a sequência sem pular nenhum elemento. \n"
                               "TMT-A - conecte os números em ordem crescente (1 -> 2 -> 3 -> ...). \n"
                               "TMT-B - alterne entre números e letras (1 -> A -> 2 -> B -> 3 -> ...). \n"
